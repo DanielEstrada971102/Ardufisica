@@ -18,4 +18,5 @@ void Electromagn(int PIN = 2);
 void luminosidad();
 void Servomotor(int PIN = 2);
 void Water_Atomization(int PIN = 8);
+void EMG_detector();
 #endif

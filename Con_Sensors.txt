@@ -1,0 +1,129 @@
+Grove-sound sensor : Microfono
+cable: Grove-Grove
+SIG -> A12 
+NC  -> A13
+VCC -> V
+GND -> G
+
+Hall effect Sensor : Sensor Hall
+cable: grove-Hembra
+A0  -> A14 
+D0  -> A15
+VCC -> V
+GND -> G
+
+Grove-Speaker : Gen.Sonido
+cable: Grove-Grove
+SIG -> D4 
+NC  -> D5
+VCC -> V
+GND -> G
+	
+Ultrasonido (HC-SR04) : Distancia
+cable: Grove-Hembra
+TRIG -> D6 
+ECHO -> D7
+VCC  -> V
+GND  -> G
+
+Infrared temparature sensor: Temperatura IR
+cable: Grove-Grove
+SUR -> A0 
+OBJ -> A1
+VCC -> V
+GND -> G
+
+Color Sensor : Sensor Color
+cable: Hembra-Macho
+S0  -> D39
+S1  -> D41
+S2  -> D43
+S3  -> D45
+OUT -> D47
+SW  -> D53
+Led -> D51
+VCC -> 5V
+GND -> GND
+
+Air Quality sensor: Calidad aire
+cable: Grove-Grove
+SIG -> A6 
+NC  -> A7
+VCC -> V
+GND -> G
+
+GSR Sensor : Respuesta Galv
+cable : Grove-Grove
+SIG -> A8 
+TP4 -> A9
+VCC -> V
+GND -> G
+
+Termocupla tipo K : Termocupla K
+cable: Hembra-Grove
+CS  -> D10 
+SCK -> D11
+SO  -> D53
+VCC -> V
+GND -> G
+
+Cambiar-->Electromagnet : Electromagnet
+cable: Grove-Grove
+SIG -> D2 
+NC  -> D3
+VCC -> V
+GND -> G
+
+GY-302, BH1750 : Intensidad. Luz
+cable: Grove-Hembra
+SCL  -> SCL
+SDA  -> SDA 
+VCC -> V
+GND -> G
+
+Micro Servo : Micro Servo 
+cable : no
+NARANJA -> D2
+ROJO -> VCC
+CAFE -> GND
+
+Finger-clip Heart Rate : Ritmo Cardiaco
+cable: Grove-Grove
+SCL  -> SCL
+SDA  -> SDA 
+VCC -> V
+GND -> G
+
+Grove-Water Atomization : Water Atomizat
+cable: Grove-Grove
+EN  -> D8 
+NC  -> D9
+VCC -> V
+GND -> G
+
+EMG sensor: EMG detector
+cable: Grove-Grove
+VOUT -> A10 
+NC   -> A11
+VCC  -> V
+GND  -> G
+
+Fotorresistencia: Fotorresisten. 
+cable: Grove-Hembra 
+CENTRO -> Vcc
+- -> GND
+S -> A3
+
+LED RGB : LED R_G_B
+cable: Grove-Hembra + 1 Hembra-Macho
+V -> GND
+R -> D7
+G -> D3
+B -> D6
+
+Tachometer : Tachometer
+cable: Grove-Grove
+OUT -> A4 
+NC  -> A5
+VCC -> V
+GND -> G

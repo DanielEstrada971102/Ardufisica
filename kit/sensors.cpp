@@ -48,6 +48,9 @@ void run_sensor(int posicion_menu){
 			case 12:
 				Water_Atomization();
 				break;
+			case 13:
+				EMG_detector();
+				break
 			default:
 				Serial.print("Error...\n Sensor no existe");
 		}
@@ -292,6 +295,7 @@ void air_quality(int SIG, int Timedelay){
 }
 
 void photoResitor(int S, int Timedelay){
+  analogReference(DEFAULT);
   int intensity = 0;
   firstLine = "Light.sensor: A" + String(S);
   
@@ -308,7 +312,7 @@ void photoResitor(int S, int Timedelay){
     lcd_mensage(firstLine, secondLine);
     delay(Timedelay);
   }
-    
+  analogReference(INTERNAL1V1);
   clean_buff();
 }
 
@@ -480,3 +484,102 @@ void Water_Atomization(int PIN){
 		}
 	clean_buff();	
 }
+// revisar......
+void EMG_detector(){
+
+	while(digitalRead(pin_sw)== 1)
+	
+	print_pantalla("EMG_dete.: A2-A3","Suelte el boton");
+	while(digitalRead(pin_sw)== 0);
+	delay(100);
+	print_pantalla("Funcion:   "+String(posicion_menu+1),Array_menu[posicion_menu]);
+}
+//....
+
+void Led_RGB(){
+  int encoder_ground= mi_encoder.read();
+  int opcion = 1;
+  int Pin = 7;
+  int Salir = 0;
+  int Valor = 0;
+  int Salir_color = 0;
+  analogWrite(7,LOW);//Red
+  analogWrite(3,LOW);//Green
+  analogWrite(6,LOW);//Blue
+  print_pantalla("RGB: D7-D3-D6","Intensidad Rojo");
+  while(Salir == 0){ 
+    if (abs(mi_encoder.read()-encoder_ground)>3){ //si el encoder se giro
+      if ((mi_encoder.read()-encoder_ground)>0){
+        opcion+=1;
+        }
+      else{
+        opcion-=1;
+        }
+      if (opcion == 1){
+      Pin = 7;
+      print_pantalla("RGB: D7-D3-D6","Intensidad Rojo");
+      }
+      else if (opcion == 2){
+        Pin = 3;
+        print_pantalla("RGB: D7-D3-D6","Intensidad Verde");
+        }
+      else if (opcion == 3){
+        Pin = 6;
+        print_pantalla("RGB: D7-D3-D6","Intensidad Azul");
+        }
+      else if (opcion == 4){
+        print_pantalla("RGB: D7-D3-D6","Salir del Menu");
+        }
+      else if (opcion == 5){
+        opcion = 1;
+        Pin = 7;
+        print_pantalla("RGB: D7-D3-D6","Intensidad Rojo");
+        }
+      else if (opcion == 0){
+        opcion = 4;
+        print_pantalla("RGB: D7-D3-D6","Salir del Menu");
+        }
+      encoder_ground= mi_encoder.read();
+      }
+    if ((opcion == 4) and (digitalRead(pin_sw) == 0)){
+        Salir = 1;
+        }
+    else if((opcion != 4) and (digitalRead(pin_sw) == 0)){
+      delay(100);
+      while(digitalRead(pin_sw) == 0);
+      print_pantalla("RGB: D7-D3-D6","Gire la perilla ");
+      while(Salir_color == 0){
+        if (abs(mi_encoder.read()-encoder_ground)>3){ //si el encoder se giro
+          if ((mi_encoder.read()-encoder_ground)>0){
+            Valor+=5;
+            }
+          else{
+            Valor-=5;
+            }
+          if (Valor > 255){
+            Valor =0;
+            }
+          else if (Valor < 0){
+            Valor =255;
+            }
+          analogWrite(Pin, Valor);
+          print_pantalla("RGB: D7-D3-D6","Intensidad: "+String(Valor));
+          encoder_ground= mi_encoder.read();
+          }
+        if (digitalRead(pin_sw) == 0){
+          Salir_color = 1;
+          delay(100);
+          while(digitalRead(pin_sw) == 0);
+          delay(100);
+          }
+        }
+        Salir_color = 0;
+        opcion = 4;
+        print_pantalla("RGB: D7-D3-D6","Gire la perilla ");
+      }
+    }
+  print_pantalla("RGB: D7-D3-D6","Suelte el boton");
+  while(digitalRead(pin_sw)== 0);
+  delay(100);
+  print_pantalla("Funcion:   "+String(posicion_menu+1),Array_menu[posicion_menu]);
+  }

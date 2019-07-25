@@ -11,7 +11,7 @@ void setup(){
 
 void loop() {	
   //========ENCODER========
-    Encoder_menu(0, 12, &posicion_menu);
+    Encoder_menu(0, 13, &posicion_menu);
     //==============================
     //Mostrar en LCD
     
