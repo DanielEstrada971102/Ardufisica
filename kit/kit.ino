@@ -9,18 +9,16 @@ void setup(){
   Wire.begin();
 }
 
-void loop() {	
+void loop(){	
   //========ENCODER========
-    Encoder_menu(0, 13, &posicion_menu);
+    Encoder_menu(0, 17, &posicion_menu);
     //==============================
     //Mostrar en LCD
     
-    char firstLine[16];
-    sprintf(firstLine, "Funciones:    %d", posicion_menu);    
-    String secondLine = Listado_menu[posicion_menu];
+    firstLine = "Funciones:    " + String(posicion_menu);   
+    secondLine = Listado_menu[posicion_menu];
     
     lcd_mensage(firstLine, secondLine);
-
  // =========SERIAL====
     if(Serial.available()){
       char caracter = Serial.read();

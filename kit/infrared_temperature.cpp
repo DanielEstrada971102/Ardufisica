@@ -113,6 +113,6 @@ void measureObjectTemp(float *final_temp, int PIN_OBJ){
 	temp2 = current_temp;        
 	temp1 = (temperature_range * voltage) / (obj[array_temp + 1][(int)(temp2 / 10) + 1] - obj[array_temp][(int)(temp2 / 10) + 1]);        
 	*final_temp = temp2 + temp1;
-	if((final_temp>100)||(final_temp<=-10))
+	if( final_temp > 100 || final_temp <= -10)
 		Serial.println ("\t Fuera de rango!");        
 }

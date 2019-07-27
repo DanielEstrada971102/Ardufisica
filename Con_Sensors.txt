@@ -115,11 +115,11 @@ CENTRO -> Vcc
 S -> A3
 
 LED RGB : LED R_G_B
-cable: Grove-Hembra + 1 Hembra-Macho
+cable: 4 Hembra-Hembra 
 V -> GND
-R -> D7
+R -> D2
 G -> D3
-B -> D6
+B -> D4
 
 Tachometer : Tachometer
 cable: Grove-Grove

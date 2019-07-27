@@ -1,3 +1,5 @@
+//Version actualmente implementada en sistemas ardufisica
+
 #define ENCODER_DO_NOT_USE_INTERRUPTS//Para que libreria no use interrupciones
 #include "rgb_lcd.h" //incluye libreria para manejo de LCD
 #include <Encoder.h> //libreria encoder
@@ -7,6 +9,26 @@
 #include <Wire.h>
 #include <BH1750.h>
 #include <Servo.h> //libreria para servomotor
+#include"Arduino.h"
+
+/*
+D2-D3   -> Electroiman, RGB(D3), Microservo(GND,VCC,D2)
+D4-D5   -> Grove Speaker
+D6-D7   -> Ultrasonido, RGB
+D8-D9   -> Atomizador
+D10-D11 -> Termocupla tipo K
+D12-D13 -> Encoder
+IIC     -> Intensidad de luz, Ritmo cardiaco
+
+A0-A1   -> Temperatura infr
+A2-A3   -> Fotorresistencia
+A4-A5   -> Tacometro
+A6-A7   -> Calidad de Aire
+A8-A9   -> Resp.Galv(GSR)
+A10-A11 -> EMG Sensor
+A12-A13 -> Microfono
+A14-A15 -> Hall
+*/
 
 //Grove Speaker
 #define Speaker 4
@@ -61,13 +83,16 @@ Servo servoMotor;
 long encoder_inicio=0; //inicio posicion encoder 0
 int posicion_menu=0; //posicion inicial menu
 int Tiempo_Tono[]={1911, 1803, 1702, 1607, 1516, 1431, 1351, 1275, 1203, 1136, 1072 ,1012};//tiempo en microsegundo para generar tono de frecuencias (261 Hz, 277Hz, 293 Hz, ...) 
-String Array_menu[17]={"<Microfono     >", "<Sensor Hall   >", "<Gen. Sonido   >", "<Distancia     >", "<Temperatura IR>", "<Sensor Color  >", "<Calidad Aire  >", "<Respuesta Galv>", "<Termocupla K  >", "<Electromagnet >", "<Instensid. Luz>", "<Micro Servo   >", "<Ritmo Cardiaco>", "<Water Atomizat>", "<EMG Detector  >", "<Fotorresisten.>", "<Led R_G_B>" };
+int maximo_dato_analogo = 300;
+int minimo_dato_analogo = 100;
+int dato_analogo_estatico = 0;
+String Array_menu[18]={"<Microfono     >", "<Sensor Hall   >", "<Gen. Sonido   >", "<Distancia     >", "<Temperatura IR>", "<Sensor Color  >", "<Calidad Aire  >", "<Respuesta Galv>", "<Termocupla K  >", "<Electromagnet >", "<Instensid. Luz>", "<Micro Servo   >", "<Ritmo Cardiaco>", "<Water Atomizat>", "<EMG Detector  >", "<Fotorresisten.>", "<Led R_G_B>", "<Tachometer>" };
 /*--------------------------------------------------------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------------------------------*/
 /*------------------------------------------------Para Sensor de Temperatura------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------------------------------*/
-  float temp_calibration=0;    //this parameter was used to calibrate the temperature
+float temp_calibration=0;    //this parameter was used to calibrate the temperature
 //float objt_calibration=0.000;//this parameter was used to calibrate the object temperature
 float temperature_range=10;    //we make a map of temperature-voltage according to sensor datasheet. 10 is the temperature step when sensor and 
                                //object distance is 9CM.
@@ -152,11 +177,11 @@ void loop(){
       }
     encoder_inicio= mi_encoder.read(); 
     
-    if (posicion_menu==17){
+    if (posicion_menu==18){
       posicion_menu=0;
       }
     else if(posicion_menu==-1){
-      posicion_menu=16;
+      posicion_menu=17;
       }
 
     print_pantalla("Funcion:   "+String(posicion_menu+1),Array_menu[posicion_menu]);
@@ -219,12 +244,16 @@ void loop(){
         case 16:
         Led_RGB(); // V -> GND, R -> D7, B -> D6, G -> 53; 
         break;
+        case 17:
+        Tacometro();
+        break;
         }
       }  
   }
 
 
 void microfono(){
+    analogReference(DEFAULT);
     print_pantalla("Sound: A12-A13","Enviando al PC...");
     long sum = 0;
     while (digitalRead(pin_sw)== 1){
@@ -235,6 +264,7 @@ void microfono(){
       sum = 0;
       delay(10);
     }
+    analogReference(INTERNAL1V1);
     print_pantalla("Sound: A12-A13","Suelte el boton");
     while(digitalRead(pin_sw)== 0);
     delay(100);
@@ -324,7 +354,7 @@ void temperatura_infrarrojo(){
 
 void color(){
   int R, G, B;
-  
+  print_pantalla("Color (RGB):  ","");
   pinMode(S0,OUTPUT);
   pinMode(S1,OUTPUT); 
   pinMode(S2,OUTPUT);//(S2,S3)=(0,0)->R, (0,1)->B, (1,1)->G, (1,0)->clear.
@@ -335,8 +365,6 @@ void color(){
   digitalWrite(S0,HIGH);//Frequency scaling 100%
   digitalWrite(SW,HIGH);
   digitalWrite(led,HIGH);
-  lcd.setCursor(0,0);
-  lcd.print("Color (RGB):  ");
   while(digitalRead(pin_sw)==1){
     for (int i=0;i<3;i++){
       if(i==0){//RED
@@ -363,43 +391,76 @@ void color(){
   G=G*255.0/maximum;
   B=B*255.0/maximum;
   lcd.setRGB(R, G, B);
-    lcd.setCursor(0,1);
-    lcd.print(R);
-    lcd.print("   ");
-    lcd.setCursor(4,1);
-    lcd.print(",");
-    lcd.print(G);
-    lcd.print("   ");
-    lcd.setCursor(10,1);
-    lcd.print(",");
-    lcd.print(B);
-    lcd.print("   ");
+  print_pantalla("Color (RGB):  ","R:"+String(R)+" G:"+String(G)+" B:"+String(B));
     Serial.print(R);
     Serial.print('\t');
     Serial.print(G);
     Serial.print('\t');
     Serial.println(B);
-  //analogWrite(11,R);//Genera el color a traves de un led RGB.
-  //analogWrite(12,G);
-  //analogWrite(13,B);
   }
-  //digitalWrite(SW,LOW);
-  //digitalWrite(led,LOW);
-  Serial.read();//Limpia el buffer serial
   lcd.setRGB(100,100,100);
-  lcd.clear();
-  encoder_inicio=-999;
+  print_pantalla("Color (RGB):  ","Suelte el boton");
+  while(digitalRead(pin_sw)== 0);
   delay(100);
- if(digitalRead(pin_sw)==0){
-  while(pin_sw==0);//Hasta que no deje de presionar el encoder no sale de la función
- }
- delay(500);
-
-  
+  print_pantalla("Funcion:   "+String(posicion_menu+1),Array_menu[posicion_menu]);
   }
 
 void calidad_aire(){
-  
+  analogReference(DEFAULT);
+  int sensor_val;
+  String quality;
+  int V_0 = 0;
+  print_pantalla("Cal.Aire:  A6-A7"," ");
+  delay(100);
+  while(digitalRead(pin_sw)==0);
+  delay(100);
+    print_pantalla("Cal.Aire:  A6-A7"," ");
+    delay(2000);
+    print_pantalla("El sensor debe","llevar conectado ");
+    delay(2000);
+    print_pantalla("al menos 3 min","para que pueda");
+    delay(2000);
+    print_pantalla("funcionar","adecuadamente.");
+    delay(2000);
+    print_pantalla("Ponga el sensor","en un lugar con");
+    delay(2000);
+    print_pantalla("aire de buena","calidad para");
+    delay(2000);
+    print_pantalla("la calibracion ","inicial. Luego,");
+    delay(2000);
+    print_pantalla("oprima el boton","para calibrar.");
+  while(digitalRead(pin_sw)==1);
+  delay(100);
+  while(digitalRead(pin_sw)==0);
+  delay(100);
+  V_0=analogRead(A6);
+  print_pantalla("Cal.Aire:  A6-A7","Sensor calibrado");
+  delay(2000);
+  print_pantalla("Cal.Aire:  A6-A7","Enviando al PC...");
+  delay(1000);
+  while (digitalRead(pin_sw)==1){
+    sensor_val=abs(analogRead(A6)-V_0);
+    if(sensor_val<=200){
+     quality="Cal.buena->";
+     }
+    else if(sensor_val>200 && sensor_val<400){
+     quality="Cal.media->";
+      }
+    else if(sensor_val>=400 && sensor_val<700){
+     quality="Cal.baja->";
+      }
+    else if(sensor_val>=700){
+     quality="Peligro->";//Los intervalos están basados en la librería AirQuality_Sensor.zip
+      }
+    print_pantalla("Cal.Aire:  A6-A7",quality+"  "+String(sensor_val));
+    Serial.println(sensor_val);
+    delay(500);
+    }
+  analogReference(INTERNAL1V1);
+  print_pantalla("Cal.Aire:  A6-A7","Suelte el boton");
+  while(digitalRead(pin_sw)== 0);
+  delay(100);
+  print_pantalla("Funcion:   "+String(posicion_menu+1),Array_menu[posicion_menu]);
   }
  
 void conductancia(){
@@ -476,7 +537,7 @@ void Electromagn(){
  void Luminosidad(){
   uint16_t lux = 0;
   luxometro.begin(BH1750::CONTINUOUS_HIGH_RES_MODE); //Inicializar BH1750 sensor de Luminosidad
-  print_pantalla("Intensidad:A0-A1","      ");
+  print_pantalla("Intensidad: IIC","      ");
   delay(500);
   print_pantalla("Intensidad: IIC","Enviando al PC...");
   delay(500);
@@ -573,10 +634,33 @@ void Water_Atomization(){
   }
 
 void EMG_detector(){
-  while(digitalRead(pin_sw)== 1){
-    
+  analogReference(DEFAULT);
+  int maximo_dato_analogo = 0;
+  int minimo_dato_analogo = 2000;
+  int dato_analogo_estatico = 0;
+  int valor =0;
+  int valor_final=0;
+  long suma= 0;
+
+  for(int i=0; i<=10; i++){
+    for(int j=0; j<100; j++){
+      suma += getAnalog(A10);
+      delay(1);
+      }
+    print_pantalla("EMG: A10-A11","Calibrando"+String(i+1)+"de 11");
     }
-  print_pantalla("EMG_dete.: A2-A3","Suelte el boton");
+  suma/= 1100;
+  dato_analogo_estatico =suma;
+  print_pantalla("EMG: A10-A11","Sistema calibrado");
+  delay(2000);
+  print_pantalla("EMG: A10-A11","Enviando al PC...");
+  while(digitalRead(pin_sw)== 1){
+    valor = getAnalog(A10);
+    Serial.println(valor);
+    delay(10);
+    }
+  analogReference(INTERNAL1V1);
+  print_pantalla("EMG: A10-A11","Suelte el boton");
   while(digitalRead(pin_sw)== 0);
   delay(100);
   print_pantalla("Funcion:   "+String(posicion_menu+1),Array_menu[posicion_menu]);
@@ -688,6 +772,55 @@ void Led_RGB(){
   delay(100);
   print_pantalla("Funcion:   "+String(posicion_menu+1),Array_menu[posicion_menu]);
   }
+
+void Tacometro(){
+  analogReference(DEFAULT);
+  int valor=0;
+  int tiempo1=0;
+  int tiempo2=0;
+  int T_Osc=0;
+  int Salir =0;
+  print_pantalla("Tacometro: A4-A5","Envia al PC");
+  delay(500);
+  print_pantalla("Tacometro: A4-A5","Tiempo en ms");
+  delay(500);
+  while(Salir == 0){
+    valor= ((analogRead(4))*5)/1023;
+    while(valor > 2 and Salir==0){
+      if (digitalRead(pin_sw) == 0){
+        Salir =1;
+        }
+      valor= ((analogRead(4))*5)/1023;
+      };
+    print_pantalla("T.Oscuri.: A4-A5","Esperando");
+    while(valor < 3 and Salir==0){
+      if (digitalRead(pin_sw) == 0){
+        Salir =1;
+        }
+      valor= ((analogRead(4))*5)/1023;
+      };
+    tiempo1=millis();
+    print_pantalla("T.Oscuri.: A4-A5","Tomando tiempo");
+    while(valor > 2 and Salir==0){
+      if (digitalRead(pin_sw) == 0){
+        Salir =1;
+        }
+      valor= ((analogRead(4))*5)/1023;
+      };
+    
+    tiempo2=millis();
+    T_Osc =tiempo2-tiempo1;
+    if (Salir == 0){
+      print_pantalla("T.Oscuri.: A4-A5","T.Osc.->"+String(T_Osc)+" ms");
+      Serial.println(T_Osc);
+      }
+    }
+  analogReference(INTERNAL1V1);
+  print_pantalla("Tacometro: A4-A5","Suelte el boton");
+  while(digitalRead(pin_sw)== 0);
+  delay(100);
+  print_pantalla("Funcion:   "+String(posicion_menu+1),Array_menu[posicion_menu]); 
+  }
   
 void print_pantalla(String linea1, String linea2){
     lcd.clear();
@@ -696,6 +829,27 @@ void print_pantalla(String linea1, String linea2){
     lcd.setCursor(0,1); //columna 0 fila 1
     lcd.print(linea2);
   }
+
+/*--------------------------------------------------------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------Para Sensor EMG-----------------------------------------------------------*/
+/*--------------------------------------------------------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------------------------------------------------*/
+int getAnalog(int pin)
+{
+    long suma = 0;
+    
+    for(int i=0; i<32; i++){
+        suma += analogRead(pin);
+    }
+    
+    int dato = suma/32;
+    
+    maximo_dato_analogo = dato > maximo_dato_analogo ? dato : maximo_dato_analogo;         // if max data
+    minimo_dato_analogo = minimo_dato_analogo > dato ? dato : minimo_dato_analogo;         // if min data
+    
+    return dato;
+}
 /*--------------------------------------------------------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------------------------------*/
 /*------------------------------------------------Para Sensor de Temperatura------------------------------------------------*/

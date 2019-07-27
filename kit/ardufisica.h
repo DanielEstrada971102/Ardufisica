@@ -38,7 +38,8 @@ extern String firstLine, secondLine; // se usan para enviar los mensajes al LCD
 extern rgb_lcd lcd;
 extern long encoder_inicio;
 extern int posicion_menu;
-extern String Listado_menu[9];
+extern String firstLine, secondLine;
+extern String Listado_menu[18];
 extern Encoder myEnc;
 
 
@@ -46,5 +47,5 @@ void clean_buff(void);
 void lcd_mensage(String firstLine = "         ", String secondLine = "         ");
 void Ardu_mensage(String sensor);
 void Encoder_menu(int infLim, int supLim, int *option, int step = 1);
-
+int getAnalog(int pin);
 #endif
