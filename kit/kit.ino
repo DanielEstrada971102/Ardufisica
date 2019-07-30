@@ -10,47 +10,85 @@ void setup(){
 }
 
 void loop(){	
-  //========ENCODER========
-    Encoder_menu(0, 17, &posicion_menu);
-    //==============================
+    //========ENCODER=====================
+
+    Encoder_menu(0, 18, &posicion_menu);
+
+    //====================================
     //Mostrar en LCD
     
-    firstLine = "Funciones:    " + String(posicion_menu);   
-    secondLine = Listado_menu[posicion_menu];
-    
-    lcd_mensage(firstLine, secondLine);
- // =========SERIAL====
+    if(posicion_menu == 18)
+      lcd_mesagge("    Más Info   ");
+    else{
+      firstLine = "Funciones:    " + String(posicion_menu);   
+      secondLine = Listado_menu[posicion_menu];
+
+      lcd_mesagge(firstLine, secondLine);
+    }
+
+ // =========SERIAL=======================
     if(Serial.available()){
-      char caracter = Serial.read();
+      String caracter = Serial.read();
       
-      if(caracter == 'm')
+      if(caracter == 'microfono')
         posicion_menu = 0;
       
-      else if(caracter == 'h')
+      else if(caracter == 'hall')
         posicion_menu = 1;
       
-      else if(caracter == 'd')
+      else if(caracter == 'gen.son')
         posicion_menu = 2;
       
-      else if(caracter == 'g'){
-        while(Serial.available() == 0);
-        int frecuencia = Serial.parseInt();
-        //generador_sonido(frecuencia);
+      else if(caracter == 'distan'){
+        posicion_menu = 3;
       }
-      else if(caracter == 's'){
-        while(Serial.available()==0);
-        int frecuencia=Serial.parseInt();
-        //variacion_sonido(frecuencia);
+      else if(caracter == 'tempIR'){
+        posicion_menu = 4;
       }
-      else if(caracter=='t')
+      else if(caracter=='color')
         posicion_menu = 5;
       
-      else if(caracter=='c')
+      else if(caracter=='calidad')
         posicion_menu = 6;
       
-      else if(caracter=='a')
+      else if(caracter=='fotoresis')
         posicion_menu = 7;
+
+      else if(caracter=='cardiaco')
+        posicion_menu = 8;
+      
+      else if(caracter=='resp.gal')
+        posicion_menu = 9;
+
+      else if(caracter=='tempk')
+        posicion_menu = 10;
+
+      else if(caracter=='iman')
+        posicion_menu = 11;
+
+      else if(caracter=='luz')
+        posicion_menu = 12;
+
+      else if(caracter=='servo')
+        posicion_menu = 13;
+
+      else if(caracter=='Atomiz')
+        posicion_menu = 14;
+
+      else if(caracter=='emg')
+        posicion_menu = 15;
+
+      else if(caracter=='ledRGB')
+        posicion_menu = 16;
+
+      else if(caracter=='tacomet')
+        posicion_menu = 17;
+
+      else if(caracter=='help')
+        posicion_menu = 18;
+
     }
+
     run_sensor(posicion_menu);
 }
 
