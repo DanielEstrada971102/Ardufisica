@@ -1,6 +1,7 @@
 #ifndef _ARDU_PHYSICS_
 #define _ARDU_PHYSICS_
 
+//==================Libraries=========================
 #include <Encoder.h>
 #include "rgb_lcd.h"
 #include <Ultrasonic.h>
@@ -13,7 +14,7 @@
 #include "max6675.h" //para uso de termocupla tipo K
 #include <BH1750.h> // Para el sensor de luminosidad
 #include <Servo.h> //libreria para servomotor
-
+//====================================================
 //Encoder
 #define pinclk 16
 #define pindt 17
@@ -34,18 +35,19 @@ extern long res[100];                                                //
 extern float obj[13][12];                                            //
 extern int calibrar_temp;                                            //
 //====================================================================
-extern String firstLine, secondLine; // se usan para enviar los mensajes al LCD
+
+extern Encoder myEnc;
 extern rgb_lcd lcd;
 extern long encoder_inicio;
 extern int posicion_menu;
-extern String firstLine, secondLine;
 extern String Listado_menu[18];
-extern Encoder myEnc;
+extern String firstLine, secondLine; // se usan para enviar los mensajes al LCD
 
-
+//====================Prototipes =========================
 void clean_buff(void);
-void lcd_mensage(String firstLine = "         ", String secondLine = "         ");
-void Ardu_mensage(String sensor);
+void lcd_mesagge(String firstLine = "         ", 
+				 String secondLine = "         ");
+void Ardu_mesagge(String sensor);
 void Encoder_menu(int infLim, int supLim, int *option, int step = 1);
-int getAnalog(int pin);
+
 #endif
