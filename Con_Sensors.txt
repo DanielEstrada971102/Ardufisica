@@ -34,15 +34,15 @@ VCC -> V
 GND -> G
 
 Color Sensor : Sensor Color
-cable: Hembra-Macho
+cable: 5 hembra-macho y Grove-Hembre
 S0  -> D39
 S1  -> D41
 S2  -> D43
 S3  -> D45
 OUT -> D47
-SW  -> D53
-Led -> D51
-VCC -> 5V
+GN2 -> D4
+Led -> D5
+VDD -> V
 GND -> GND
 
 Air Quality sensor: Calidad aire
