@@ -68,22 +68,12 @@ String serial_readPhrase(){
     String phrase = "";
     int i = 0;
     char c;
-    
-    if(Serial1.available()){
-        while(Serial1.available()){
-            c = Serial1.read();
-            if(c != '\n')
-                phrase.concat(c);
-        }
+   
+    while(Serial.available()){
+        c = Serial.read();
+        if(c != '\n')
+            phrase.concat(c);
     }
-    else{
-        while(Serial.available()){
-            c = Serial.read();
-            if(c != '\n')
-                phrase.concat(c);
-        }
-    }
-    
     return phrase;       
 }
 

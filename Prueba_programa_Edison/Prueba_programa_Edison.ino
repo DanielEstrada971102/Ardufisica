@@ -13,7 +13,7 @@
 
 /*
 D2-D3   -> Electroiman, RGB(D3), Microservo(GND,VCC,D2)
-D4-D5   -> Grove Speaker
+D4-D5   -> Grove Speaker,Color Sensor
 D6-D7   -> Ultrasonido, RGB
 D8-D9   -> Atomizador
 D10-D11 -> Termocupla tipo K
@@ -47,7 +47,7 @@ A14-A15 -> Hall
 #define pin_sw 12 //suiche encoder
 
 //Sensor de color
-int S0=39,S1=41,S2=43,S3=45,SW=53,led=51,out=47;
+int S0=39,S1=41,S2=43,S3=45,out=47,GND2=4,led=5;
 
 //GSR Sensor: Galvanic Skin Response
 int sensorValue=0;
@@ -145,7 +145,8 @@ float obj [13][12]={
 /*--------------------------------------------------------------------------------------------------------------------------*/
 
 void setup(){
-  Serial.begin(115200); //Comunicacion serial a 115200 baudios 
+  Serial.begin(115200); //Comunicacion serial a 9600 baudios 
+  Serial1.begin(115200); //Comunicacion serial a 9600 baudios con Bluetooth
   lcd.begin(16,2); //Inicia LCD 16 columnas, 2 filas.  
   lcd.setRGB(100,100,100); //Colores Red Green Blue en la pantalla
   pinMode(pin_sw, INPUT_PULLUP); //Boton del encoder 
@@ -248,6 +249,111 @@ void loop(){
         Tacometro();
         break;
         }
+      }
+    if(Serial1.available()){
+      char caracter=Serial1.read();
+      if(caracter=='0'){
+        while(Serial1.available()==0);
+        char caracter=Serial1.read();
+        if (caracter=='1'){
+          Serial1.println("");
+          Serial1.println("Microfono");
+          microfono();
+          }
+        else if (caracter=='2'){
+          Serial1.println("");
+          Serial1.println("Campo Magnetico");
+          hall_magnetico();
+          }
+        else if (caracter=='3'){
+          Serial1.println("");
+          Serial1.println("Grove Speaker");
+          generador_sonido();
+          }
+        else if (caracter=='4'){
+          Serial1.println("");
+          Serial1.println("Distancia - ultrasonido");
+          distancia_ultrasonido();
+          }
+        else if (caracter=='5'){
+          Serial1.println("");
+          Serial1.println("Temperatura Infrarrojo");
+          temperatura_infrarrojo();
+          }
+        else if (caracter=='6'){
+          Serial1.println("");
+          Serial1.println("Color");
+          color();
+          }
+        else if (caracter=='7'){
+          Serial1.println("");
+          Serial1.println("Calidad de Aire");
+          calidad_aire();
+          }
+        else if (caracter=='8'){
+          Serial1.println("");
+          Serial1.println("Galvanic Skin Response (GSR)");
+          conductancia();
+          }
+        else if (caracter=='9'){
+          Serial1.println("");
+          Serial1.println("Termocupla K");
+          Termocupla_k();
+          }
+        else{
+          }
+        }
+      else if(caracter=='1'){
+        while(Serial1.available()==0);
+        char caracter=Serial1.read();
+        if (caracter=='0'){
+          Serial1.println("");
+          Serial1.println("Electromagnet");
+          Electromagn();
+          }
+        else if (caracter=='1'){
+          Serial1.println("");
+          Serial1.println("Luminosidad");
+          Luminosidad();
+          }
+        else if (caracter=='2'){
+          Serial1.println("");
+          Serial1.println("Servomotor");
+          Servomotor();
+          }
+        else if (caracter=='3'){
+          Serial1.println("");
+          Serial1.println("Ritmo Cardiaco");
+          Ritmo_cardiaco();
+          }
+        else if (caracter=='4'){
+          Serial1.println("");
+          Serial1.println("Water Atomizator");
+          Water_Atomization();
+          }
+        else if (caracter=='5'){
+          Serial1.println("");
+          Serial1.println("EMG Sensor");
+          EMG_detector();
+          }
+        else if (caracter=='6'){
+          Serial1.println("");
+          Serial1.println("Fotorresistencia");
+          Fotorresistencia();
+          }
+        else if (caracter=='7'){
+          Serial1.println("");
+          Serial1.println("Led RGB");
+          Led_RGB();
+          }
+        else if (caracter=='8'){
+          Serial1.println("");
+          Serial1.println("Tacometro");
+          Tacometro();
+          }
+        else{
+          }
+        }
       }  
   }
 
@@ -256,11 +362,12 @@ void microfono(){
     analogReference(DEFAULT);
     print_pantalla("Sound: A12-A13","Enviando al PC...");
     long sum = 0;
-    while (digitalRead(pin_sw)== 1){
+    while (digitalRead(pin_sw)== 1 and (Serial1.available()== 0)){
       for(int i=0; i<1000; i++){
         sum += analogRead(A12);
         }
       Serial.println(sum);
+      Serial1.println(sum);
       sum = 0;
       delay(10);
     }
@@ -276,10 +383,11 @@ void hall_magnetico(){
     int campo=0;
     int campo_0=analogRead(A14);
     print_pantalla("Hall:  A14-A15","Enviando al PC...");
-    while (digitalRead(pin_sw)== 1){
+    while (digitalRead(pin_sw)== 1 and (Serial1.available()== 0)){
       campo=(analogRead(A14)-campo_0);  
       print_pantalla("Hall:  A14-A15","   Valor ->"+ String(campo));
       Serial.println(campo);
+      Serial1.println(campo);
       delay(100);
     }
     analogReference(INTERNAL1V1);
@@ -293,7 +401,7 @@ void generador_sonido(){
   int encoder_ground= mi_encoder.read();
   int tono = 0;
   print_pantalla("Speaker: D4-D5"," "+String(tono+1)+"   "+String(500000/Tiempo_Tono[tono])+" Hz");
-  while(digitalRead(pin_sw)== 1){ 
+  while(digitalRead(pin_sw)== 1 and (Serial1.available()== 0)){ 
     if (abs(mi_encoder.read()-encoder_ground)>7){ //si el encoder se giro
       if ((mi_encoder.read()-encoder_ground)>0){
         tono+=1;
@@ -327,11 +435,12 @@ void distancia_ultrasonido(){
   unsigned long t_inicial=millis();
   unsigned long t;
   int distancia;
-  while(digitalRead(pin_sw)==1){
+  while(digitalRead(pin_sw)==1 and (Serial1.available()== 0)){
     t=(millis()-t_inicial)/1000.0;
     distancia=ultrasonido.Ranging(CM);
     print_pantalla("Ultrasonido: D6","    "+String(distancia)+"   cm");
     Serial.println(distancia);
+    Serial1.println(distancia);
     delay(500);
     }
   print_pantalla("Ultrasonido: D6","Suelte el boton");
@@ -342,7 +451,7 @@ void distancia_ultrasonido(){
 
 void temperatura_infrarrojo(){
   print_pantalla("Infra.Temp.: A0 "," ");
-  while(digitalRead(pin_sw) == 1){  
+  while(digitalRead(pin_sw) == 1 and (Serial1.available()== 0)){  
     measureSurTemp();//measure the Surrounding temperature around the sensor
     measureObjectTemp();
     }
@@ -359,13 +468,13 @@ void color(){
   pinMode(S1,OUTPUT); 
   pinMode(S2,OUTPUT);//(S2,S3)=(0,0)->R, (0,1)->B, (1,1)->G, (1,0)->clear.
   pinMode(S3,OUTPUT);
-  pinMode(SW,OUTPUT);
+  pinMode(GND2,OUTPUT);
   pinMode(led,OUTPUT);
   digitalWrite(S1,LOW);
   digitalWrite(S0,HIGH);//Frequency scaling 100%
-  digitalWrite(SW,HIGH);
+  digitalWrite(GND2,LOW);
   digitalWrite(led,HIGH);
-  while(digitalRead(pin_sw)==1){
+  while(digitalRead(pin_sw)==1 and (Serial1.available()== 0)){
     for (int i=0;i<3;i++){
       if(i==0){//RED
         digitalWrite(S2,0);
@@ -397,6 +506,11 @@ void color(){
     Serial.print(G);
     Serial.print('\t');
     Serial.println(B);
+    Serial1.print(R);
+    Serial1.print('\t');
+    Serial1.print(G);
+    Serial1.print('\t');
+    Serial1.println(B);
   }
   lcd.setRGB(100,100,100);
   print_pantalla("Color (RGB):  ","Suelte el boton");
@@ -412,7 +526,7 @@ void calidad_aire(){
   int V_0 = 0;
   print_pantalla("Cal.Aire:  A6-A7"," ");
   delay(100);
-  while(digitalRead(pin_sw)==0);
+  while(digitalRead(pin_sw)==0 and (Serial1.available()== 0));
   delay(100);
     print_pantalla("Cal.Aire:  A6-A7"," ");
     delay(2000);
@@ -429,16 +543,16 @@ void calidad_aire(){
     print_pantalla("la calibracion ","inicial. Luego,");
     delay(2000);
     print_pantalla("oprima el boton","para calibrar.");
-  while(digitalRead(pin_sw)==1);
+  while(digitalRead(pin_sw)==1  and (Serial1.available()== 0));
   delay(100);
-  while(digitalRead(pin_sw)==0);
+  while(digitalRead(pin_sw)==0 and (Serial1.available()== 0));
   delay(100);
   V_0=analogRead(A6);
   print_pantalla("Cal.Aire:  A6-A7","Sensor calibrado");
   delay(2000);
   print_pantalla("Cal.Aire:  A6-A7","Enviando al PC...");
   delay(1000);
-  while (digitalRead(pin_sw)==1){
+  while (digitalRead(pin_sw)==1 and (Serial1.available()== 0)){
     sensor_val=abs(analogRead(A6)-V_0);
     if(sensor_val<=200){
      quality="Cal.buena->";
@@ -454,6 +568,7 @@ void calidad_aire(){
       }
     print_pantalla("Cal.Aire:  A6-A7",quality+"  "+String(sensor_val));
     Serial.println(sensor_val);
+    Serial1.println(sensor_val);
     delay(500);
     }
   analogReference(INTERNAL1V1);
@@ -472,7 +587,7 @@ void conductancia(){
   int sensorValue=0;
   int gsr_average=0;
   long sum=0;
-  while (digitalRead(pin_sw)==1){
+  while (digitalRead(pin_sw)==1 and (Serial1.available()== 0)){
     sum=0;
     for(int i=0;i<10;i++){
       sensorValue=analogRead(A8);
@@ -482,6 +597,7 @@ void conductancia(){
     gsr_average = sum/10;
     print_pantalla("GSR:  A8-A9","GSR_Avg    "+ String(gsr_average));
     Serial.println(gsr_average);
+    Serial1.println(gsr_average);
     }
   analogReference(INTERNAL1V1);
   print_pantalla("GSR:  A8-A9","Suelte el boton");
@@ -496,9 +612,10 @@ void conductancia(){
   delay(500);
   print_pantalla("Termocupla: D10","Enviando al PC...");
   delay(500);
-  while(digitalRead(pin_sw) == 1){  
+  while(digitalRead(pin_sw) == 1 and (Serial1.available()== 0)){  
     print_pantalla("Termocupla: D10","      "+String(thermocouple.readCelsius())+" "+char(223)+"C");
     Serial.println(thermocouple.readCelsius());
+    Serial1.println(thermocouple.readCelsius());
     // ESPERAR UN SEGUNDO ENTRE LAS LECTURAS
     delay(1000);
     }
@@ -513,7 +630,7 @@ void Electromagn(){
   int opcion = 1;
   digitalWrite(2,LOW);
   print_pantalla("Electromag:D2-D3","Electroiman Off");
-  while(digitalRead(pin_sw)== 1){ 
+  while(digitalRead(pin_sw)== 1 and (Serial1.available()== 0)){ 
     if (abs(mi_encoder.read()-encoder_ground)>7){ //si el encoder se giro
       if ((mi_encoder.read()-encoder_ground)>0){
         opcion=1;
@@ -541,9 +658,10 @@ void Electromagn(){
   delay(500);
   print_pantalla("Intensidad: IIC","Enviando al PC...");
   delay(500);
-  while(digitalRead(pin_sw) == 1){  
+  while(digitalRead(pin_sw) == 1 and (Serial1.available()== 0)){  
     lux = luxometro.readLightLevel(); // Lectura del BH1750
     Serial.println(lux);
+    Serial1.println(lux);
     print_pantalla("Intensidad: IIC","      "+String(lux)+" lx");
     delay(500);
     }
@@ -558,7 +676,7 @@ void Servomotor(){
   int ang = 0;
   servoMotor.write(180);
   print_pantalla("Servo:GND-VCC-D2","   Angulo  "+String(0));
-  while(digitalRead(pin_sw)== 1){ 
+  while(digitalRead(pin_sw)== 1 and (Serial1.available()== 0)){ 
     if (abs(mi_encoder.read()-encoder_ground)>3){ //si el encoder se giro
       if ((mi_encoder.read()-encoder_ground)>0){
         ang+=3;
@@ -592,11 +710,12 @@ void Ritmo_cardiaco(){
   delay(500);
   print_pantalla("Ritmo Cardi: IIC","Enviando al PC...");
   delay(500);
-  while(digitalRead(pin_sw) == 1){  
+  while(digitalRead(pin_sw) == 1 and (Serial1.available()== 0)){  
     Wire.requestFrom(0xA0 >> 1, 1);    // request 1 bytes from slave device
     while(Wire.available()) {          // slave may send less than requested
       c = Wire.read();   // receive heart rate value (a byte)
       Serial.println(c, DEC);         // print heart rate value
+      Serial1.println(c, DEC);
       print_pantalla("Ritmo Cardi: IIC","    c=  "+String(c));
       }
     delay(100);
@@ -612,7 +731,7 @@ void Water_Atomization(){
   int opcion = 1;
   digitalWrite(8,LOW);
   print_pantalla("Atomizador:D8-D9","Atomizacion Off");
-  while(digitalRead(pin_sw)== 1){ 
+  while(digitalRead(pin_sw)== 1 and (Serial1.available()== 0)){ 
     if (abs(mi_encoder.read()-encoder_ground)>7){ //si el encoder se giro
       if ((mi_encoder.read()-encoder_ground)>0){
         opcion=1;
@@ -654,9 +773,10 @@ void EMG_detector(){
   print_pantalla("EMG: A10-A11","Sistema calibrado");
   delay(2000);
   print_pantalla("EMG: A10-A11","Enviando al PC...");
-  while(digitalRead(pin_sw)== 1){
+  while(digitalRead(pin_sw)== 1 and (Serial1.available()== 0)){
     valor = getAnalog(A10);
     Serial.println(valor);
+    Serial1.println(valor);
     delay(10);
     }
   analogReference(INTERNAL1V1);
@@ -673,10 +793,11 @@ void Fotorresistencia(){
   delay(500);
   print_pantalla("Fotorres.: A2-A3","Enviando al PC...");
   delay(500);
-  while(digitalRead(pin_sw) == 1){  
+  while(digitalRead(pin_sw) == 1 and (Serial1.available()== 0)){  
     valor=analogRead(A3);
     print_pantalla("Fotorres.: A2-A3","  Valor ->  "+String(valor));
     Serial.println(valor);
+    Serial1.println(valor);
     delay(100);
     }
   analogReference(INTERNAL1V1);
@@ -696,7 +817,7 @@ void Led_RGB(){
   analogWrite(3,LOW);//Green
   analogWrite(6,LOW);//Blue
   print_pantalla("RGB: D7-D3-D6","Intensidad Rojo");
-  while(Salir == 0){ 
+  while(Salir == 0 and (Serial1.available()== 0)){ 
     if (abs(mi_encoder.read()-encoder_ground)>3){ //si el encoder se giro
       if ((mi_encoder.read()-encoder_ground)>0){
         opcion+=1;
@@ -737,7 +858,7 @@ void Led_RGB(){
       delay(100);
       while(digitalRead(pin_sw) == 0);
       print_pantalla("RGB: D7-D3-D6","Gire la perilla ");
-      while(Salir_color == 0){
+      while(Salir_color == 0 and (Serial1.available()== 0)){
         if (abs(mi_encoder.read()-encoder_ground)>3){ //si el encoder se giro
           if ((mi_encoder.read()-encoder_ground)>0){
             Valor+=5;
@@ -784,7 +905,7 @@ void Tacometro(){
   delay(500);
   print_pantalla("Tacometro: A4-A5","Tiempo en ms");
   delay(500);
-  while(Salir == 0){
+  while(Salir == 0 and (Serial1.available()== 0)){
     valor= ((analogRead(4))*5)/1023;
     while(valor > 2 and Salir==0){
       if (digitalRead(pin_sw) == 0){
@@ -793,7 +914,7 @@ void Tacometro(){
       valor= ((analogRead(4))*5)/1023;
       };
     print_pantalla("T.Oscuri.: A4-A5","Esperando");
-    while(valor < 3 and Salir==0){
+    while(valor < 3 and Salir==0 and (Serial1.available()== 0)){
       if (digitalRead(pin_sw) == 0){
         Salir =1;
         }
@@ -801,7 +922,7 @@ void Tacometro(){
       };
     tiempo1=millis();
     print_pantalla("T.Oscuri.: A4-A5","Tomando tiempo");
-    while(valor > 2 and Salir==0){
+    while(valor > 2 and Salir==0 and (Serial1.available()== 0)){
       if (digitalRead(pin_sw) == 0){
         Salir =1;
         }
@@ -810,9 +931,10 @@ void Tacometro(){
     
     tiempo2=millis();
     T_Osc =tiempo2-tiempo1;
-    if (Salir == 0){
+    if (Salir == 0 and (Serial1.available()== 0)){
       print_pantalla("T.Oscuri.: A4-A5","T.Osc.->"+String(T_Osc)+" ms");
       Serial.println(T_Osc);
+      Serial1.println(T_Osc);
       }
     }
   analogReference(INTERNAL1V1);
@@ -900,6 +1022,8 @@ float measureSurTemp(){
   current_temp=signal-1+temp_calibration+(res[signal-1]-R)/(res[signal-1]-res[signal]);
   Serial.print("Temperatura Ambiente:");
   Serial.print(current_temp);
+  Serial1.print("Temperatura Ambiente:");
+  Serial1.print(current_temp);
   return current_temp;
   }
 float measureObjectTemp(){
@@ -919,17 +1043,23 @@ float measureObjectTemp(){
   sur_temp=temp1-(reference_vol+offset_vol);             
   Serial.print("\t Voltaje del sensor:");   
   Serial.print(sur_temp,3); 
-  Serial.print("V");  
+  Serial.print("V");
+  Serial1.print("\t Voltaje del sensor:");   
+  Serial1.print(sur_temp,3); 
+  Serial1.print("V");  
   array_temp=arraysearch(current_temp,sur_temp*1000);        
   temp2=current_temp;        
   temp1=(temperature_range*voltage)/(obj[array_temp+1][(int)(temp2/10)+1]-obj[array_temp][(int)(temp2/10)+1]);        
   final_temp=temp2+temp1;        
   if((final_temp>100)||(final_temp<=-10)){
     Serial.println ("\t Fuera de rango!");
+    Serial1.println ("\t Fuera de rango!");
     }
   else{
       Serial.print("\t Temperatura del objeto:");   
       Serial.println(final_temp,2);
+      Serial1.print("\t Temperatura del objeto:");   
+      Serial1.println(final_temp,2);
       print_pantalla("Infra.Temp.: A0 ","   "+String(final_temp)+" "+char(223)+"C"); 
       }
   }

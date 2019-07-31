@@ -23,11 +23,14 @@ void loop(){
     lcd_mesagge(firstLine, secondLine);
 
     if(Serial.available() or Serial1.available() or digitalRead(pinsw)==0){        
-        // =========Control Bluetooht=========
-        String sensor = serial_readPhrase();
-        for (int i= 0; i < 17; i++){
-            if(sensor == Listado_sensors[i]){
-                posicion_menu = i;
+        // =========Control Serial=========
+        if(Serial.available()){
+            String sensor = serial_readPhrase();
+            for (int i= 0; i < 18; i++){
+                if(sensor == Listado_sensors[i]){
+                    posicion_menu = i;
+                    break;
+                }     
             }
         }
         //===================================

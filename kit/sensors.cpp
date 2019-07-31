@@ -72,10 +72,13 @@ void generador_sonido(int SIG){
 	/*
 		SIG -> Enable sensor
 	*/
-
-	//time in microsecond to generate frequency tone (261 Hz, 277Hz, 293 Hz,...)
 	int tono = 0;
-	int Tiempo_Tono[] = {1911, 1803, 1702, 1607, 1516, 1431, 1351, 1275,
+	String freq = "";
+	bool continar = false;
+  	String Lista_freq [12] ={"261", "277", "293", "311", "329", "349", "369", 
+  							 "391", "415", "440", "466", "493"};
+	//time in microsecond to generate frequency tone (261 Hz, 277Hz, 293 Hz,...)
+	int Tiempo_Tono[12] = {1911, 1803, 1702, 1607, 1516, 1431, 1351, 1275,
 	                     1203, 1136, 1072 ,1012}; 
 
 	firstLine = "Speaker : D" + String(SIG);
@@ -83,11 +86,25 @@ void generador_sonido(int SIG){
 				 " Hz "; 
 
 	lcd_mesagge(firstLine, secondLine);
-
+  	Ardu_mesagge("Grove - Speaker ");
 	int encoder_inicio = myEnc.read();
-	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){ 
-    	Encoder_menu(0, 11, &tono);
-      	
+
+	while(digitalRead(pinsw) == 1 and not(continar)){
+		freq = serial_readPhrase();
+		for (int i= 0; i < 12; i++){
+                if(freq == "freq "+ Lista_freq[i]){
+                    tono = i;
+                    break;
+                }
+        
+	  }
+   	Serial.println(tono);
+   	delay(500);
+	} 
+
+	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
+      	Encoder_menu(0, 11, &tono);
+    	
 		secondLine = String(tono + 1)+"        "+String(500000/Tiempo_Tono[tono]) +
 					" Hz ";
 		lcd_mesagge(firstLine, secondLine);
@@ -122,7 +139,7 @@ void distancia_ultrasonido(int TRIG, int ECHO){
   	Serial1.println("t (s) \t ditancia (cm)");
 	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
 		t = millis() - t_inicial;
-		distancia = ultrasonido.read();
+		distancia = ultrasonido.Ranging(CM);
 		Serial.print(t / 1000.0);
 		Serial.print('\t');
 		Serial.println(distancia);
