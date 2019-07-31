@@ -14,7 +14,7 @@ void microfono(int SIG, int Timedelay){
 	Serial.println("Intensidad");
 	Serial1.println("Intensidad");
 	
-	while(digitalRead(pinsw) == 1){
+	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
 		for(int i = 0; i < 1000; i++)
 		  Intensity += analogRead(SIG);
 		
@@ -50,7 +50,7 @@ void hall_magnetico(int AO, int Timedelay){
 	Ardu_mesagge("Hall Sensor Magnetic M44");
   	Serial.println("tiempo(s)  Campo(G)");
   	Serial1.println("tiempo(s)  Campo(G)");
-	while(digitalRead(pinsw) == 1){
+	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
 		t = (millis() - t_inicial);
 		campo = (analogRead(AO) - V_0) * factor; // pin A14 --default
 		Serial.print(t/1000.0); 
@@ -85,7 +85,7 @@ void generador_sonido(int SIG){
 	lcd_mesagge(firstLine, secondLine);
 
 	int encoder_inicio = myEnc.read();
-	while(digitalRead(pinsw) == 1){ 
+	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){ 
     	Encoder_menu(0, 11, &tono);
       	
 		secondLine = String(tono + 1)+"        "+String(500000/Tiempo_Tono[tono]) +
@@ -120,9 +120,9 @@ void distancia_ultrasonido(int TRIG, int ECHO){
 	Ardu_mesagge("Ultrasonic Sensor HC-SR04");
   	Serial.println("t (s) \t ditancia (cm)");
   	Serial1.println("t (s) \t ditancia (cm)");
-	while(digitalRead(pinsw) == 1){
+	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
 		t = millis() - t_inicial;
-		distancia = ultrasonido.Ranging(CM);
+		distancia = ultrasonido.read();
 		Serial.print(t / 1000.0);
 		Serial.print('\t');
 		Serial.println(distancia);
@@ -153,7 +153,7 @@ void temperatura_infrarrojo(int SUR, int OBJ){
 	Serial.println("Sensor voltaje tiempo(s) TempSUR(°C)  TempOBJ(°C)");
 	Serial1.println("Sensor voltaje tiempo(s) TempSUR(°C)  TempOBJ(°C)");
 	
-	while(digitalRead(pinsw) == 1){
+	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
 		t = millis() - t_inicial;
 		measureSurTemp(&temperaturaSUR, SUR); // pin A0 -- default
 		measureObjectTemp(&temperaturaOBJ, OBJ); // Pin A1 -- default
@@ -217,7 +217,7 @@ void color(int S0, int S1, int S2, int S3, int OE, int led, int out){
 	Ardu_mesagge("Color sensor - TCS3200");
 	Serial.println("R\tG\tB");
 	Serial1.println("R\tG\tB");
-	while(digitalRead(pinsw) == 1){
+	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
 		for (int i = 0; i < 3; i++){
 			if(i == 0){  //RED
 				digitalWrite(S2,0);
@@ -278,7 +278,8 @@ void calidad_aire(int SIG, int Timedelay){
  
   	delay(1000);
 	while(digitalRead(pinsw) == 1){
-		if (i + 16 < mesagge.length())
+		if(continuar = 1) break;
+		else if (i + 16 < mesagge.length())
 			lcd_mesagge(mesagge.substring(i, i + 16));
 		else
 			i = 0;
@@ -286,7 +287,7 @@ void calidad_aire(int SIG, int Timedelay){
 		delay(100);
 	}
 	delay(100);
-	while(digitalRead(pinsw) == 0);
+	while(digitalRead(pinsw) == 0 and serial_readPhrase() != "stop");
   	firstLine = "Cal. Aire: A" + String(SIG);
 	lcd_mesagge(firstLine);
 
@@ -300,7 +301,7 @@ void calidad_aire(int SIG, int Timedelay){
 	Ardu_mesagge("Air Quality sensor");
     Serial.println("Valor");
     Serial1.println("Valor");
-	while (digitalRead(pinsw) == 1){
+	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
 		sensor_val = abs(analogRead(SIG)-V_0);
 		
 		if(sensor_val <= 200)
@@ -340,7 +341,7 @@ void photoResitor(int S, int Timedelay){
 	Serial.println("Valor");
 	Serial1.println("Valor");
 
-	while (digitalRead(pinsw) == 1){
+	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
 		value = analogRead(S); // pin A2 -- default
 
 		Serial.println(value);
@@ -367,7 +368,7 @@ void ritmo_cardiaco(int Timedelay){
 	Ardu_mesagge("finger clip heart rate sensor");
 	Serial.println("frecuencia  (BPM)");
 	Serial1.println("frecuencia  (BPM)");
-	while(Wire.available() == 0 && digitalRead(pinsw) == 1){ 
+	while(Wire.available() == 0 and digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){ 
 	    Wire.requestFrom( 0xA0  >>  1 ,  1 );// solicitar 1 bytes desde el dispositivo esclavo         
       	c = Wire.read();   // receive heart rate value (a byte)
       	Serial.println(c, DEC);         // print heart rate value
@@ -398,7 +399,7 @@ void conductancia(int PIN){
 	Ardu_mesagge("Galvanic Skin Response (GSR)");
 	Serial.println("GSR (Promedio)");
 	Serial1.println("GSR (Promedio)");
-	while (digitalRead(pinsw)==1){
+	while(digitalRead(pinsw)==1 and serial_readPhrase() != "stop"){
 		sum = 0;
 		for(int i = 0; i < 10; i++){
 			sensorValue = analogRead(PIN); // pin A8 -- default
@@ -434,7 +435,7 @@ void Termocupla_k( int CS, int SCK, int SO, int Timedelay){
 	Ardu_mesagge("Termocupla tipo K - MAX6675K");	
 	Serial.println("Temp (°C) ");
 	Serial1.println("Temp (°C) ");
-	while(digitalRead(pinsw) == 1){
+	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
 		temp = thermocouple.readCelsius(); 
 		secondLine = " " + String(temp) + "    " + char(223) + "C         ";
 	    
@@ -446,38 +447,38 @@ void Termocupla_k( int CS, int SCK, int SO, int Timedelay){
 	clean_buff();  
 }
 
-void electroIman(int PIN){
-	/*
-		PIN -> Enable Electromagnet
-	 */
-    encoder_inicio = myEnc.read();
-	firstLine = "Electromag: D" + String(PIN); // Pin D2 -- default
-	int state = 1;
+// void electroIman(int PIN){
+// 	/*
+// 		PIN -> Enable Electromagnet
+// 	 */
+//     encoder_inicio = myEnc.read();
+// 	firstLine = "Electromag: D" + String(PIN); // Pin D2 -- default
+// 	int state = 1;
 
-	digitalWrite(PIN,LOW);
-	lcd_mesagge(firstLine," Electroiman Off  ");
-	delay(100);
+// 	digitalWrite(PIN,LOW);
+// 	lcd_mesagge(firstLine," Electroiman Off  ");
+// 	delay(100);
  
-	while(digitalRead(pinsw)== 1){ 
-		Encoder_menu(0, 1, &state);
-		if (state == 0){
-			digitalWrite(PIN,HIGH);
-			secondLine = " Electroiman on  ";
-		}
-		else if(state == 1){
-			secondLine = " Electroiman off  ";
-			digitalWrite(PIN,LOW);
-		}
-		else{
-			digitalWrite(PIN,LOW);
-			secondLine = " Electroiman Off  ";
-		}
+// 	while(digitalRead(pinsw)== 1){ 
+// 		Encoder_menu(0, 1, &state);
+// 		if (state == 0){
+// 			digitalWrite(PIN,HIGH);
+// 			secondLine = " Electroiman on  ";
+// 		}
+// 		else if(state == 1){
+// 			secondLine = " Electroiman off  ";
+// 			digitalWrite(PIN,LOW);
+// 		}
+// 		else{
+// 			digitalWrite(PIN,LOW);
+// 			secondLine = " Electroiman Off  ";
+// 		}
 
-		lcd_mesagge(firstLine, secondLine);
-	}
-    digitalWrite(PIN,LOW);
-	clean_buff();
-}
+// 		lcd_mesagge(firstLine, secondLine);
+// 	}
+//     digitalWrite(PIN,LOW);
+// 	clean_buff();
+// }
 
 void luminosidad(){
 	uint16_t lux = 0;
@@ -493,7 +494,7 @@ void luminosidad(){
 	Serial.println("Luminosidad (lx)");
 	Serial1.println("Luminosidad (lx)");
 
-	while(digitalRead(pinsw) == 1){  
+	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){  
 		lux = luxometro.readLightLevel(); // Lectura del BH1750
 		Serial.println(lux);
 		Serial1.println(lux);
@@ -521,7 +522,7 @@ void Servomotor(int PIN){
 	servoMotor.write(180);
 	lcd_mesagge(firstLine, secondLine);
 
-	while(digitalRead(pinsw) == 1){ 
+	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){ 
 		Encoder_menu(0, 180, &ang, 3);
 		servoMotor.write(180-ang);
 
@@ -539,7 +540,7 @@ void atomizador(int PIN){
 	digitalWrite(PIN,LOW);
 	lcd_mesagge(firstLine, "Atomizacion Off");
 	
-	while(digitalRead(pinsw)== 1){ 
+	while(digitalRead(pinsw)== 1 and serial_readPhrase() != "stop"){ 
 		Encoder_menu(0, 1, &option);
 
 		if (option == 1){
@@ -579,7 +580,7 @@ void EMG_detector(int VOUT, int Timedelay){
 	Ardu_mesagge("Grov - EMG detector");
 	Serial.println("V_out");
 	Serial1.println("V_out");
-	while(digitalRead(pinsw) == 1){
+	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
 		valor = getAnalog(VOUT);
 		secondLine = "VOUT -> " + String(valor) + "       ";
 
@@ -613,9 +614,9 @@ void Led_RGB(int R, int G, int B){
 	firstLine = "RGB: D" + String(R) +"-D"+ String(G) + "-D" + String(B);
 	
 	lcd_mesagge(firstLine, opciones[opcion]);
-	while (digitalRead(pinsw) == 1){
+	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
 		while(Salir == 0){
-			while (digitalRead(pinsw) == 1){
+			while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
 				Encoder_menu(0, 3, &opcion);
 				if (opcion == 1){
 					Pin = R;
@@ -633,7 +634,7 @@ void Led_RGB(int R, int G, int B){
 					lcd_mesagge(firstLine,opciones[opcion]);
 			}	
 
-			if (opcion == 0 && digitalRead(pinsw) == 0)
+			if (opcion == 0 and digitalRead(pinsw) == 0)
 			    Salir = 1;
 
 			else if (digitalRead(pinsw) == 0){
@@ -643,7 +644,7 @@ void Led_RGB(int R, int G, int B){
 
 				encoder_inicio = myEnc.read();
 				while(Salir_color == 0){
-					while(digitalRead(pinsw) == 1){
+					while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
 						Encoder_menu(0, 255, &Valor);
 						lcd_mesagge(firstLine,"Intensidad: "+String(Valor) + "  ");
 					 }
@@ -705,7 +706,7 @@ void Tacometro(int OUT){
 		lcd_mesagge(firstLine, "Tomando tiempo");
 		
 		while(valor > 2 and Salir==0){
-		  	if (digitalRead(pinsw) == 0)
+		  	if (digitalRead(pinsw) == 0 or serial_readPhrase() == "stop")
 		    	Salir = 1;
 		  	valor= (analogRead(OUT) * 5) / 1023;
 		}

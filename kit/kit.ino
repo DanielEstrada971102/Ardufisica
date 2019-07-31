@@ -12,6 +12,7 @@ void setup(){
 }
 
 void loop(){
+    //=========Control Encoder ===========
     Encoder_menu(0, 17, &posicion_menu);
     
     //=========Mostrar en LCD=============
@@ -21,36 +22,18 @@ void loop(){
 
     lcd_mesagge(firstLine, secondLine);
 
-    //=========Control Encoder ===========
-    if(digitalRead(pinsw)==0){
-        delay(100);
+    if(Serial.available() or Serial1.available() or digitalRead(pinsw)==0){        
+        // =========Control Bluetooht=========
+        String sensor = serial_readPhrase();
+        for (int i= 0; i < 17; i++){
+            if(sensor == Listado_sensors[i]){
+                posicion_menu = i;
+            }
+        }
+        //===================================
+        
         run_sensor(posicion_menu);
-    }
-
-    // =========Control Bluetooht=========
-//    if(Serial.available()){
-//        String palabra[5];
-//        int i = 0;
-//        char c;
-//
-//        while((c = Serial1.read()) != '\n')
-//            palabra[i] = c;
-//            i++;
-//
-//        i = 0;
-//
-//        for (i; i < 18; i++){
-//            if(palabra = Listado_sensores[i]){
-//                if( i == 18)
-//                    Serial1.println("detenido..");
-//                else{
-//                    posicion_menu = i;
-//                    run_sensor(posicion_menu);
-//                    break;
-//                }
-//            }
-//        }
-//    }    
+    } 
 }
 
 

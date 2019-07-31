@@ -2,6 +2,7 @@
 
 Encoder myEnc(pinclk, pindt);
 rgb_lcd lcd;
+int continuar = 0;
 long encoder_inicio = 0;
 int posicion_menu = 0;
 String firstLine, secondLine;
@@ -11,10 +12,10 @@ String Listado_menu[18] = {"<Microfono     >", "<Sensor Hall   >", "<Gen. sonido
                            "<Micro Servo   >", "<Atomizador    >", "<Detector EMG  >", "<Led R_G_B     >", 
                            "<Tacometro     >", "<   Mas Info   >" };
 
-String Listado_sensores[19] = {"micro", "shall", "gene.s", "dista", 
-                           "temIR", "color", "calid", "fotor", 
-                           "cardi", "s.gsr", "tempK", "s.luz", "servo", "atomi", "s.emg", 
-                           "ld.RGB", "tacom", "help?", "stop." };
+String Listado_sensors[18] = {"microf", "hall", "gen.son", "distan", 
+                           "tempIR", "color", "calidad", "fotorres", 
+                           "cardiaco", "gsr", "tempK", "luz", "servo", "atomiza", "emg", 
+                           "ledRGB", "tacomet", "help"};
 void clean_buff(void){
     lcd.clear();
     Serial.read();//Limpia el buffer serial
@@ -61,6 +62,29 @@ void Encoder_menu(int infLim, int supLim, int *option, int step){
      
 	  encoder_inicio = myEnc.read();
 	}
+}
+
+String serial_readPhrase(){
+    String phrase = "";
+    int i = 0;
+    char c;
+    
+    if(Serial1.available()){
+        while(Serial1.available()){
+            c = Serial1.read();
+            if(c != '\n')
+                phrase.concat(c);
+        }
+    }
+    else{
+        while(Serial.available()){
+            c = Serial.read();
+            if(c != '\n')
+                phrase.concat(c);
+        }
+    }
+    
+    return phrase;       
 }
 
 void run_sensor(int posicion_menu){
