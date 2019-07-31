@@ -2,7 +2,6 @@
 #define _SENSORS_
 
 //====================Prototipes =========================
-void run_sensor(int posicion_menu);
 void microfono(int SIG = 12, int Timedelay = 10);
 void hall_magnetico(int AO = 14, int Timedelay = 500);
 void generador_sonido(int SIG = 4);
@@ -20,9 +19,8 @@ void luminosidad();
 void Servomotor(int PIN = 2);
 void atomizador(int PIN = 8);
 void EMG_detector(int VOUT = 10, int Timedelay = 100);
-void Led_RGB(int R = 2, int G = 3, int B = 4);
+void Led_RGB(int R = 7, int G = 3, int B = 6);
 void Tacometro(int OUT = 4);
-void info();
 int getAnalog(int pin);
 
 #endif

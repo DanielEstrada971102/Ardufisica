@@ -41,13 +41,15 @@ extern rgb_lcd lcd;
 extern long encoder_inicio;
 extern int posicion_menu;
 extern String Listado_menu[18];
+extern String Listado_sensores[19];
 extern String firstLine, secondLine; // se usan para enviar los mensajes al LCD
 
 //====================Prototipes =========================
 void clean_buff(void);
-void lcd_mesagge(String firstLine = "         ", 
-				 String secondLine = "         ");
+void lcd_mesagge(String firstLine = "                ", 
+				 String secondLine = "                ");
 void Ardu_mesagge(String sensor);
 void Encoder_menu(int infLim, int supLim, int *option, int step = 1);
-
+void run_sensor(int posicion_menu);
+void info();
 #endif
