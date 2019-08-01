@@ -6,16 +6,17 @@ int continuar = 0;
 long encoder_inicio = 0;
 int posicion_menu = 0;
 String firstLine, secondLine;
-String Listado_menu[18] = {"<Microfono     >", "<Sensor Hall   >", "<Gen. sonido   >", "<Distancia     >", 
-                           "<Temperatura IR>", "<Sensor color  >", "<Calidad aire  >", "<Fotorresisten.>", 
-                           "<Ritmo Cardiaco>", "<Respuesta Galv>", "<Termocupla K  >", "<Instensid. Luz>", 
-                           "<Micro Servo   >", "<Atomizador    >", "<Detector EMG  >", "<Led R_G_B     >", 
-                           "<Tacometro     >", "<   Mas Info   >" };
+String Listado_menu[18] = {"<Microfono     >", "<Sensor Hall   >", "<Gen. sonido   >", 
+                           "<Distancia     >", "<Temperatura IR>", "<Sensor color  >", 
+                           "<Calidad aire  >", "<Fotorresisten.>", "<Ritmo Cardiaco>", 
+                           "<Respuesta Galv>", "<Termocupla K  >", "<Instensid. Luz>", 
+                           "<Micro Servo   >", "<Atomizador    >", "<Detector EMG  >", 
+                           "<Led R_G_B     >", "<Tacometro     >", "<   Mas Info   >" };
 
-String Listado_sensors[18] = {"microf", "hall", "gen.son", "distan", 
-                           "tempIR", "color", "calidad", "fotorres", 
-                           "cardiaco", "gsr", "tempK", "luz", "servo", "atomiza", "emg", 
-                           "ledRGB", "tacomet", "help"};
+String Listado_sensors[18] = {"microf", "hall", "gen.son", "distan", "tempIR", 
+                              "color", "calidad", "fotorres", "cardiaco", "gsr",
+                              "tempK", "luz", "servo", "atomiza", "emg", "ledRGB", 
+                              "tacomet", "help"};
 void clean_buff(void){
     lcd.clear();
     Serial.read();//Limpia el buffer serial
@@ -66,14 +67,25 @@ void Encoder_menu(int infLim, int supLim, int *option, int step){
 
 String serial_readPhrase(){
     String phrase = "";
-    int i = 0;
     char c;
-   
-    while(Serial.available()){
-        c = Serial.read();
-        if(c != '\n')
-            phrase.concat(c);
+
+    //======Mensaje po Serial============
+    if(Serial.available()){
+        while(Serial.available()){
+            c = Serial.read();
+            if(c != '\r' and c!= '\n')
+                phrase.concat(c);
+        }
     }
+    //======Mensaje po Bluetooth=========
+    else if(Serial1.available()){
+        while(Serial1.available()){
+            c = Serial1.read();
+            if(c != '\r' and c!= '\n')
+                phrase.concat(c);
+        }
+    }
+    
     return phrase;       
 }
 
@@ -140,6 +152,7 @@ void run_sensor(int posicion_menu){
         default:
             Serial.print("Error...\n Sensor no existe");
             Serial1.print("Error...\n Sensor no existe");
+            break;
     }
 }
 

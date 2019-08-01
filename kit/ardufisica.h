@@ -13,7 +13,7 @@
 #include <BH1750.h> // Para el sensor de luminosidad
 #include <Servo.h> //libreria para servomotor
 //====================================================
-//Encoder
+//Pines Encoder
 #define pinclk 16
 #define pindt 17
 #define pinsw 12
@@ -33,7 +33,7 @@ extern long res[100];                                                //
 extern float obj[13][12];                                            //
 extern int calibrar_temp;                                            //
 //====================================================================
-
+// Variables globales para la programacion del modulo ardufisica
 extern Encoder myEnc;
 extern rgb_lcd lcd;
 extern int continuar;
@@ -43,7 +43,7 @@ extern String Listado_menu[18];
 extern String Listado_sensors[18];
 extern String firstLine, secondLine; // se usan para enviar los mensajes al LCD
 
-//====================Prototipes =========================
+//====================Prototipos =========================
 void clean_buff(void);
 void lcd_mesagge(String firstLine = "                ", 
 				 String secondLine = "                ");

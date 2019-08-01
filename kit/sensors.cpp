@@ -1,6 +1,6 @@
 #include "ardufisica.h"
 
-
+//=========================Sensores disponibles=================================
 void microfono(int SIG, int Timedelay){
 	/*
 		SIG -> Voltage input
@@ -82,13 +82,17 @@ void generador_sonido(int SIG){
 	                     1203, 1136, 1072 ,1012}; 
 
 	firstLine = "Speaker : D" + String(SIG);
-	secondLine = String(tono ) + "         "+ String(500000/Tiempo_Tono[tono]) +
+	secondLine = String(tono ) + "         "+ Lista_freq[tono] +
 				 " Hz "; 
 
 	lcd_mesagge(firstLine, secondLine);
   	Ardu_mesagge("Grove - Speaker ");
 	int encoder_inicio = myEnc.read();
 
+	lcd_mesagge("    Continuar   ", "            --> ");
+	Serial.println("Introduzca la frecuencia o presione el encoder para continuar");
+	Serial1.println("Introduzca la frecuencia o presione el encoder para continuar");
+	
 	while(digitalRead(pinsw) == 1 and not(continar)){
 		freq = serial_readPhrase();
 		for (int i= 0; i < 12; i++){
@@ -96,17 +100,18 @@ void generador_sonido(int SIG){
                     tono = i;
                     break;
                 }
-        
-	  }
-   	Serial.println(tono);
-   	delay(500);
+                else{
+                	if(freq == "continue")
+                    	continuar = true;
+                }
+	    }
+   		delay(500);
 	} 
-
+  	delay(500);
 	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
       	Encoder_menu(0, 11, &tono);
     	
-		secondLine = String(tono + 1)+"        "+String(500000/Tiempo_Tono[tono]) +
-					" Hz ";
+		secondLine = String(tono + 1)+"        "+ Lista_freq[tono] + " Hz ";
 		lcd_mesagge(firstLine, secondLine);
 	
 		digitalWrite(SIG,HIGH); // pin A4 -- default
@@ -463,6 +468,7 @@ void Termocupla_k( int CS, int SCK, int SO, int Timedelay){
     }
 	clean_buff();  
 }
+// Este sensor se deshabilito por que requiere de mucha corriente para funcionar
 
 // void electroIman(int PIN){
 // 	/*
