@@ -8,7 +8,6 @@ void setup(){
   pinMode(pinsw, INPUT_PULLUP);
   lcd.begin(16,2); //16 columns and 2 rows
   lcd.setRGB(100,100,100);
-
 }
 
 void loop(){
@@ -27,11 +26,13 @@ void loop(){
         if(Serial.available() or Serial1.available()){
             String sensor = serial_readPhrase();
             
-            for (int i= 0; i < 18; i++){
+            for (int i= 0; i < 19; i++){
                 if(sensor == Listado_sensors[i]){
                     posicion_menu = i;
                     break;
-                }     
+                }
+                else if(i == 18)
+                    posicion_menu = i;     
             }
         }
         //===================================

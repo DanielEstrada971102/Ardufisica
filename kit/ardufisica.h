@@ -36,7 +36,6 @@ extern int calibrar_temp;                                            //
 // Variables globales para la programacion del modulo ardufisica
 extern Encoder myEnc;
 extern rgb_lcd lcd;
-extern int continuar;
 extern long encoder_inicio;
 extern int posicion_menu;
 extern String Listado_menu[18];

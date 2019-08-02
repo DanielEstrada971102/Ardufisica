@@ -17,7 +17,8 @@ void microfono(int SIG, int Timedelay){
 	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
 		for(int i = 0; i < 1000; i++)
 		  Intensity += analogRead(SIG);
-		
+
+    Intensity >>=5;
 		Serial.println(Intensity);	// pin A12 --default
 		Serial1.println(Intensity);
     secondLine = String(Intensity) + "    dt=" + String(Timedelay)+ " ms";
@@ -36,7 +37,7 @@ void hall_magnetico(int AO, int Timedelay){
 		AO -> Input Voltage
 	 */
 	analogReference(DEFAULT);
-	float factor = 5000.0/(1023.0*1.3); //1.3mV/Gauss , 5V->1023
+	float factor = 5000.0/(1023.0 * 1.3); //1.3mV/Gauss , 5V->1023
   	firstLine = "Hall: A" + String(AO);
   	secondLine = "Calib.campo ...";
   
@@ -60,7 +61,7 @@ void hall_magnetico(int AO, int Timedelay){
 		Serial1.print('\t');
 		Serial1.println(campo);
 
-    	secondLine = String(campo) + "           G ";
+    	secondLine = String(campo) + "            G ";
 		lcd_mesagge(firstLine, secondLine);
 		delay(Timedelay); // tiempo de espera en ms --500 ms default
 	}
@@ -73,15 +74,16 @@ void generador_sonido(int SIG){
 		SIG -> Enable sensor
 	*/
 	int tono = 0;
+	int tono_temp = tono;
 	String freq = "";
-	bool continar = false;
+	bool continuar = false;
   	String Lista_freq [12] ={"261", "277", "293", "311", "329", "349", "369", 
   							 "391", "415", "440", "466", "493"};
 	//time in microsecond to generate frequency tone (261 Hz, 277Hz, 293 Hz,...)
 	int Tiempo_Tono[12] = {1911, 1803, 1702, 1607, 1516, 1431, 1351, 1275,
 	                     1203, 1136, 1072 ,1012}; 
 
-	firstLine = "Speaker : D" + String(SIG);
+	firstLine = "Speaker : D" + String(SIG) + "    ";
 	secondLine = String(tono ) + "         "+ Lista_freq[tono] +
 				 " Hz "; 
 
@@ -90,34 +92,49 @@ void generador_sonido(int SIG){
 	int encoder_inicio = myEnc.read();
 
 	lcd_mesagge("    Continuar   ", "            --> ");
-	Serial.println("Introduzca la frecuencia o presione el encoder para continuar");
-	Serial1.println("Introduzca la frecuencia o presione el encoder para continuar");
-	
-	while(digitalRead(pinsw) == 1 and not(continar)){
+	Serial.println("Introduzca una de las siguientes frecuencia o escriba 'continue' para omitir");
+	Serial1.println("Introduzca una de las siguientes frecuencia o escriba 'continue' para omitir");
+
+	for(int i = 0; i < 12; i++){
+	  	Serial.println(Lista_freq[i]);
+	  	Serial1.println(Lista_freq[i]);
+	}
+  
+	while(digitalRead(pinsw) == 1 and not(continuar)){
 		freq = serial_readPhrase();
 		for (int i= 0; i < 12; i++){
-                if(freq == "freq "+ Lista_freq[i]){
-                    tono = i;
-                    break;
-                }
-                else{
-                	if(freq == "continue")
-                    	continuar = true;
-                }
+            if(freq == Lista_freq[i]){
+                tono = i;
+                continuar = true;
+                Serial.println("Usted escogio " + Lista_freq[i] + " Hz");
+                Serial1.println("Usted escogio " + Lista_freq[i] + " Hz");
+                break;
+            }
+            else{
+            	if(freq == "continue")
+                	continuar = true;
+            }
 	    }
-   		delay(500);
+      delay(100);
 	} 
+
   	delay(500);
+    secondLine = " "+String(tono+1)+"   "+String(500000/Tiempo_Tono[tono])+" Hz  ";
+	lcd_mesagge(firstLine, secondLine);
+	
 	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
       	Encoder_menu(0, 11, &tono);
-    	
-		secondLine = String(tono + 1)+"        "+ Lista_freq[tono] + " Hz ";
-		lcd_mesagge(firstLine, secondLine);
-	
-		digitalWrite(SIG,HIGH); // pin A4 -- default
-		delayMicroseconds(Tiempo_Tono[tono]);
-		digitalWrite(SIG,LOW);
-		delayMicroseconds(Tiempo_Tono[tono]);
+      
+      	if(tono_temp != tono){
+          	tono_temp = tono;
+          	secondLine = " "+String(tono+1)+"   "+String(500000/Tiempo_Tono[tono])+" Hz  ";
+    		lcd_mesagge(firstLine, secondLine);
+     	}
+      
+      	digitalWrite(SIG,HIGH);
+      	delayMicroseconds(Tiempo_Tono[tono]);
+      	digitalWrite(SIG,LOW);
+      	delayMicroseconds(Tiempo_Tono[tono]);
 	}
  
 	digitalWrite(SIG,LOW);
@@ -131,7 +148,7 @@ void distancia_ultrasonido(int TRIG, int ECHO){
 		ECHO -> Echo Input 
 	 */
 
-	Ultrasonic ultrasonido(TRIG,ECHO,30000); // pin A6-A7 -- default 
+	Ultrasonic ultrasonido(TRIG,ECHO,30000); // pin D6-D7 -- default 
 	firstLine = "Ultrasonic:D" + String(TRIG) + "-D" + String(ECHO);
 	
 	lcd_mesagge(firstLine);
@@ -144,7 +161,7 @@ void distancia_ultrasonido(int TRIG, int ECHO){
   	Serial1.println("t (s) \t ditancia (cm)");
 	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
 		t = millis() - t_inicial;
-		distancia = ultrasonido.Ranging(CM);
+		distancia = ultrasonido.read(CM);
 		Serial.print(t / 1000.0);
 		Serial.print('\t');
 		Serial.println(distancia);
@@ -152,7 +169,7 @@ void distancia_ultrasonido(int TRIG, int ECHO){
 		Serial1.print('\t');
 		Serial1.println(distancia);
 
-    	secondLine = String(distancia) + "          cm ";
+    	secondLine = String(distancia) + "          cm   ";
 		lcd_mesagge(firstLine, secondLine);
 		delay(500);
 	}
@@ -294,22 +311,32 @@ void calidad_aire(int SIG, int Timedelay){
 	*/
 	analogReference(DEFAULT);
 	int sensor_val, i = 0;
+  	bool continuar = false;
 	String quality;
-	String mesagge = {"El sensor debe llevar conectado al menos 3 min para que pueda funcionar adecuadamente. Ponga el sensor en un lugar con aire de buena calidad para la calibracion inicial. Luego, oprima el boton para continuar. "};
+	String mesagge = {"El sensor debe llevar conectado al menos 3 min para que pueda funcionar adecuadamente. Ponga el sensor en un lugar con aire de buena calidad para la calibracion inicial. Luego, oprima el encoder o escriba 'continue' para continuar. "};
 	int V_0 = 0;
  
   	delay(1000);
-	while(digitalRead(pinsw) == 1){
-		if(continuar = 1) break;
+  Ardu_mesagge("Air Quality sensor");
+  Serial.println(mesagge);
+  Serial1.println(mesagge);
+	while(digitalRead(pinsw) == 1 and not(continuar)){
+		if(serial_readPhrase() == "continue")
+			continuar = true;
+
 		else if (i + 16 < mesagge.length())
 			lcd_mesagge(mesagge.substring(i, i + 16));
+		
 		else
 			i = 0;
 		i++;
+		
 		delay(100);
 	}
+
 	delay(100);
-	while(digitalRead(pinsw) == 0 and serial_readPhrase() != "stop");
+	
+	while(digitalRead(pinsw) == 0);
   	firstLine = "Cal. Aire: A" + String(SIG);
 	lcd_mesagge(firstLine);
 
@@ -320,7 +347,6 @@ void calidad_aire(int SIG, int Timedelay){
 	lcd_mesagge(firstLine,"Enviando al PC...");
 	delay(1000);
 
-	Ardu_mesagge("Air Quality sensor");
     Serial.println("Valor");
     Serial1.println("Valor");
 	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
@@ -369,7 +395,7 @@ void photoResitor(int S, int Timedelay){
 		Serial.println(value);
 		Serial1.println(value);
 		
-		secondLine = String(value) + "      dt =" + String(Timedelay); 
+		secondLine = String(value) + "      dt =" + String(Timedelay)+ "   "; 
 
 		lcd_mesagge(firstLine, secondLine);
 		delay(Timedelay);
@@ -533,25 +559,34 @@ void Servomotor(int PIN){
 	/*
 		PIN -> PWM output
 	 */
-    Servo servoMotor;
-	servoMotor.attach(PIN); //Microservo naranja
+  Servo servoMotor;
+  servoMotor.attach(PIN); //Microservo naranja
 
 	encoder_inicio = myEnc.read();
 	int ang = 0;
+  int ang_temp = ang;
 	
 	firstLine = "Servo:  D" + String(PIN);
-	secondLine = "   Angulo  0";
+	secondLine = "   Angulo  0  ";
 
 	servoMotor.write(180);
 	lcd_mesagge(firstLine, secondLine);
-
+  Ardu_mesagge("Mico Servo SG90");
+  Serial.println("Angulo");
+  Serial1.println("Angulo");
+  
 	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){ 
-		Encoder_menu(0, 180, &ang, 3);
-		servoMotor.write(180-ang);
-
-		secondLine = "   Angulo  " + String(ang); 
-		lcd_mesagge(firstLine, secondLine);
+		Encoder_menu(0, 180, &ang,2);
+		if( ang != ang_temp){
+		    servoMotor.write(180-ang);
+		    secondLine = "   Angulo  " + String(ang) + "     "; 
+        lcd_mesagge(firstLine, secondLine);
+		    Serial.println(ang);
+        Serial1.println(ang);
+		    ang_temp = ang;
+		}
 	}
+    servoMotor.write(180);
     clean_buff();
 }
 
@@ -626,10 +661,10 @@ void Led_RGB(int R, int G, int B){
 	int encoder_inicio = myEnc.read();
 	int opcion = 1;
 	int Pin = R;
-	int Salir = 0, Salir_color = 0;
+	bool Salir =false, Salir_options =false, Salir_color = false;
 	int Valor = 0;
-	String opciones[5] = {"Volver al Menu  ", "Intensidad Rojo  ", 
-						  "Intensidad Verde  ", "Intensidad Azul  "};
+	String opciones[5] = {"Volver al Menu   ", "Intensidad Rojo   ", 
+						  "Intensidad Verde   ", "Intensidad Azul   "};
 	analogWrite(R,LOW);//Red Pin D2 -- default
 	analogWrite(G,LOW);//Green Pin D3 -- default
 	analogWrite(B,LOW);//Blue Pin D4 -- default
@@ -637,9 +672,30 @@ void Led_RGB(int R, int G, int B){
 	firstLine = "RGB: D" + String(R) +"-D"+ String(G) + "-D" + String(B);
 	
 	lcd_mesagge(firstLine, opciones[opcion]);
-	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
-		while(Salir == 0){
-			while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
+	
+		while(not(Salir) and serial_readPhrase() != "stop"){
+		   while(digitalRead(pinsw) == 1 and not(Salir_options)){
+        if(Serial.available() or Serial1.available()){
+          String color = serial_readPhrase();
+          String intensity = color.substring(1); 
+          if(color == "stop"){
+              opcion = 0;
+              Salir_options = true;
+          }
+          else if(intensity.toInt() < 255 and intensity.toInt() >0){
+              if( color[0] == 'R')
+                  opcion = 1; 
+              else if( color[0] == 'G')
+                  opcion = 2;
+              else if( color[0] == 'B'){
+                  opcion = 3;
+              }
+              Valor = intensity.toInt();
+              Salir_options = true;
+              color = "", intensity = "";    
+         }
+         delay(100);
+       }
 				Encoder_menu(0, 3, &opcion);
 				if (opcion == 1){
 					Pin = R;
@@ -656,36 +712,26 @@ void Led_RGB(int R, int G, int B){
 				else if (opcion == 0)
 					lcd_mesagge(firstLine,opciones[opcion]);
 			}	
-
-			if (opcion == 0 and digitalRead(pinsw) == 0)
-			    Salir = 1;
-
-			else if (digitalRead(pinsw) == 0){
+      Salir_options = false;
+			if (opcion == 0){
+			    Salir = true;
+			}
+			else{
 				delay(100);
 				while(digitalRead(pinsw) == 0);
-				lcd_mesagge(firstLine,"Gire la perilla  ");
-
 				encoder_inicio = myEnc.read();
-				while(Salir_color == 0){
-					while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
+					while(digitalRead(pinsw) == 1 and Serial1.available() == 0){
 						Encoder_menu(0, 255, &Valor);
-						lcd_mesagge(firstLine,"Intensidad: "+String(Valor) + "  ");
+						lcd_mesagge(firstLine,"Intensidad: "+String(Valor) + "      ");
 					 }
 
 					analogWrite(Pin, Valor);
+          Salir_color = false;
 
-					if (digitalRead(pinsw) == 0){
-					  Salir_color = 1;
-					  delay(100);
-					  while(digitalRead(pinsw) == 0);
-					}
-				}
-
-				Salir_color = 0;
 				lcd_mesagge(firstLine,opciones[opcion]);
+        delay(500);
 			}
 		}
-	}
   analogWrite(R,LOW);//Red Pin D2 -- default
   analogWrite(G,LOW);//Green Pin D3 -- default
   analogWrite(B,LOW);//Blue Pin D4 -- default

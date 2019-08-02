@@ -2,7 +2,6 @@
 
 Encoder myEnc(pinclk, pindt);
 rgb_lcd lcd;
-int continuar = 0;
 long encoder_inicio = 0;
 int posicion_menu = 0;
 String firstLine, secondLine;
@@ -49,7 +48,7 @@ void Ardu_mesagge(String sensor){
 }
 
 void Encoder_menu(int infLim, int supLim, int *option, int step){
-		
+ 
 	if(abs(myEnc.read() - encoder_inicio)> 3){
 		if(myEnc.read() - encoder_inicio > 0)
 			*option = *option + step;
@@ -63,6 +62,7 @@ void Encoder_menu(int infLim, int supLim, int *option, int step){
      
 	  encoder_inicio = myEnc.read();
 	}
+
 }
 
 String serial_readPhrase(){
@@ -150,8 +150,8 @@ void run_sensor(int posicion_menu){
             info();
             break;
         default:
-            Serial.print("Error...\n Sensor no existe");
-            Serial1.print("Error...\n Sensor no existe");
+            Serial.print("Error... Sensor no existe\n");
+            Serial1.print("Error... Sensor no existe\n");
             break;
     }
 }

@@ -19,7 +19,7 @@ void luminosidad();
 void Servomotor(int PIN = 2);
 void atomizador(int PIN = 8);
 void EMG_detector(int VOUT = 10, int Timedelay = 100);
-void Led_RGB(int R = 7, int G = 3, int B = 6);
+void Led_RGB(int R = 6, int G = 3, int B = 7);
 void Tacometro(int OUT = 4);
 int getAnalog(int pin);
 
