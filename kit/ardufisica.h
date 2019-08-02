@@ -14,26 +14,12 @@
 #include <Servo.h> //libreria para servomotor
 //====================================================
 //Pines Encoder
+#define ENCODER_DO_NOT_USE_INTERRUPTS//Para que libreria no use interrupciones
 #define pinclk 16
 #define pindt 17
 #define pinsw 12
 
-//====Variables globales para el sensor de temperatura infrarojo==== //
-extern float temp_calibration;                                       //
-//float objt_calibration=0.000;                                      //   
-extern float temperature_range;                                      //
-extern float offset_vol;                                             //
-                                                                     //
-extern float current_temp;                                           //
-extern float temp, temp1, temp2;                                     //
-extern int temp3;                                                    // 
-extern const float reference_vol;                                    // 
-extern float voltage;                                                //
-extern long res[100];                                                //       
-extern float obj[13][12];                                            //
-extern int calibrar_temp;                                            //
-//====================================================================
-// Variables globales para la programacion del modulo ardufisica
+// Variables globales==================================
 extern Encoder myEnc;
 extern rgb_lcd lcd;
 extern long encoder_inicio;
@@ -46,7 +32,7 @@ extern String firstLine, secondLine; // se usan para enviar los mensajes al LCD
 void clean_buff(void);
 void lcd_mesagge(String firstLine = "                ", 
 				 String secondLine = "                ");
-void Ardu_mesagge(String sensor);
+void Ardu_mesagge();
 void Encoder_menu(int infLim, int supLim, int *option, int step = 1);
 String serial_readPhrase();
 void run_sensor(int posicion_menu);

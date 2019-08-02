@@ -1,20 +1,26 @@
 #include "ardufisica.h"
 
 ///PARA LA MEDICIÓN DE TEMPERATURA CON SENSOR INFRARROJO. ESTÁ BASADO EN EL EJEMPLO SUMINISTRADO POR SEESTUDIO. EL OBJETO DEBE ESTAR A 9CM DEL SENSOR.
-float temp_calibration = 0;       //this parameter was used to calibrate the temperature
-//float objt_calibration=0.000; //this parameter was used to calibrate the object temperature
-float temperature_range = 10;    //we make a map of temperature-voltage according to sensor datasheet. 10 is the temperature step when sensor and 
+float temp_calibration=0;    //this parameter was used to calibrate the temperature
+//float objt_calibration=0.000;//this parameter was used to calibrate the object temperature
+float temperature_range=10;    //we make a map of temperature-voltage according to sensor datasheet. 10 is the temperature step when sensor and 
                                //object distance is 9CM.
-float offset_vol = -0.005; //0.016;       //this parameter was used to set the mid level voltage,when put the sensor in normal environment after 10 min,
+float offset_vol=-0.005;       //this parameter was used to set the mid level voltage,when put the sensor in normal environment after 10 min,
                                //the sensor output 0.For example,the surrounding temperature is 29℃，but the result is 27℃ via the sensor,
                                //you should set the reerence to 0.520 or more,according to your sensor to change.
                                //the unit is V
-float current_temp = 0;
-float temp = 0, temp1 = 0, temp2 = 0;
-int temp3 = 0;
-const float reference_vol = 0.500;
-//unsigned char clear_num = 0;//when use lcd to display
-float voltage = 0;
+float tempValue = 0; 
+float objtValue= 0;  
+float current_temp=0;
+float temp=0;
+float temp1=0;
+float temp2=0;
+unsigned int temp3=0;
+const float reference_vol=0.5;
+unsigned char clear_num=0;//when use lcd to display
+float R=0;
+float voltage=0;
+
 
 long res[100]={
                  318300,302903,288329,274533,261471,249100,237381,226276,215750,205768,
@@ -44,78 +50,81 @@ float obj [13][12]={
 /*12*/            { 5.29,5.076,4.83,4.549,4.231,3.872,3.47,3.023,2.527,1.98,1.379,0.72}
 };
 
-float binSearch(long x){ // this function used for measure the surrounding temperature
-	int low = 0, mid, high = 100;
+ float binSearch(long x){// this function used for measure the surrounding temperature
+    int low,mid,high;
+    low = 0;
+    //mid=0;
+    high = 100;
+    while (low <= high){
+        mid = (low + high)/2;
+        if(x < res[mid])
+          low = mid+1;
+        else//(x>res[mid])
+          high = mid - 1;
+    }
 
-	while (low <= high){
-		mid = (low + high) / 2;
-		if(x < res[mid])
-			low = mid  +1;
-		else //(x>res[mid])
-			high = mid - 1;
-	}
-	
-	return mid;
+    return mid;
+}
+float arraysearch(float x,float y){//x is the surrounding temperature,y is the object temperature
+    int i = 0;
+    float tem_coefficient = 100;//Magnification of 100 times  
+    i = (x / 10) + 1;//Ambient temperature      
+    voltage = (float)y/tem_coefficient;//the original voltage   
+     
+    for(temp3 = 0; temp3 < 13; temp3++){     
+        if((voltage > obj[temp3][i]) && (voltage < obj[temp3+1][i]))     
+            return temp3;              
+    }
+}
+void measureSurTemp(float *final_temp, int SUR){  
+    unsigned char i = 0;
+    float current_temp1 = 0;    
+    int signal = 0;   
+    tempValue = 0;
+
+    for(i = 0; i < 10; i++){     
+        tempValue += analogRead(SUR);       
+        delay(10);    
+    }   
+    tempValue = tempValue / 10;   
+    temp = tempValue * 1.1 / 1023;    
+    R = 2000000 * temp / (2.50 - temp);   
+    signal = binSearch(R);    
+    current_temp=signal-1+temp_calibration+(res[signal-1]-R)/(res[signal-1]-res[signal]);
+
+    *final_temp = current_temp;
 }
 
-float arraysearch(float x, float y){ //x is the surrounding temperature,y is the object temperature
-	int i = (x / 10) + 1; //Ambient temperature 
-	float tem_coefficient = 100; //Magnification of 100 times       
+void measureObjectTemp(float *final_temp1, int OBJ){
+    unsigned char i = 0;  
+    unsigned char j = 0;  
+    float sur_temp = 0;  
+    unsigned int array_temp = 0;  
+    float temp1, temp2; 
+    float final_temp = 0;
+    objtValue = 0;  
+    
+    for(i = 0; i < 10; i++){
+        objtValue += analogRead(OBJ); 
+        delay(10); 
+    }
+    objtValue = objtValue / 10;//Averaging processing     
+    temp1 = objtValue * 1.1 / 1023;//+objt_calibration; 
+    sur_temp = temp1 - (reference_vol+offset_vol);             
 
-	voltage = (float)y / tem_coefficient; //the original voltage   
-	//Serial.print("sensor voltage:\t");    
-	//Serial.print(voltage,5);  
-	//Serial.print("V");      
-	for(temp3 = 0; temp3 < 13; temp3++){     
-		if((voltage > obj[temp3][i]) && (voltage < obj[temp3+1][i])){     
-		  return temp3;         
-		}     
-	}
-}
+    Serial.print(sur_temp,3); 
+    Serial.print("V    ");
+    Serial1.print(sur_temp,3); 
+    Serial1.print("V    ");  
 
-void measureSurTemp(float *final_temp, int PIN_SUR){  
-	unsigned char i = 0;
-	float R = 0;
-	float current_temp1 = 0, tempValue = 0;    
-	int signal = 0;   
+    array_temp = arraysearch(current_temp, sur_temp * 1000);        
+    temp2 = current_temp;        
+    temp1 = (temperature_range * voltage) / (obj[array_temp+1][(int)(temp2 / 10) + 1] - obj[array_temp][(int)(temp2 / 10) + 1]);        
+    final_temp = temp2 + temp1;
 
-	for(i = 0; i < 10; i++){     
-		tempValue += analogRead(PIN_SUR);       
-		delay(10);    
-	}   
-	tempValue = tempValue / 10;   
-	temp = tempValue * 1.1 / 1023;    
-	R = 2000000 * temp / (2.50 - temp);   
-	signal = binSearch(R);    
-	current_temp = signal - 1 + temp_calibration + (res[signal-1] - R) / (res[signal-1] - res[signal]);
-	
-	*final_temp = current_temp;
-}
-
-void measureObjectTemp(float *final_temp, int PIN_OBJ){
-	unsigned char i = 0, j = 0;  
-	float sur_temp = 0, objtValue = 0; 
-	unsigned int array_temp = 0;  
-	//float temp1, temp2;  
-	
-	for(i = 0; i < 10; i++){
-	objtValue += analogRead(PIN_OBJ); 
-	delay(10); 
-	}       
-	objtValue = objtValue / 10;//Averaging processing     
-	temp1 = objtValue * 1.1 / 1023; //+objt_calibration;
-    offset_vol = temp1 -(reference_vol + offset_vol);
-
-	sur_temp = temp1 -(reference_vol + offset_vol);                
-	Serial.print(sur_temp,3);   
-	Serial.print("\t\t");  
-	Serial1.print(sur_temp,3);   
-	Serial1.print("    ");  
-	array_temp = arraysearch(current_temp, sur_temp * 1000);        
-	temp2 = current_temp;        
-	temp1 = (temperature_range * voltage) / (obj[array_temp + 1][(int)(temp2 / 10) + 1] - obj[array_temp][(int)(temp2 / 10) + 1]);        
-	*final_temp = temp2 + temp1;
-	if( *final_temp > 100 || *final_temp <= -10)
-		Serial.println ("\t Fuera de rango!");
-		Serial1.println (" Fuera de rango!");        
+    if((final_temp > 100) or (final_temp <= -10)){
+        Serial.println ("\t Fuera de rango!");
+        Serial1.println ("    Fuera de rango!");
+    }
+    else *final_temp1 = final_temp; 
 }

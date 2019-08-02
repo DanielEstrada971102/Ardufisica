@@ -8,6 +8,7 @@ void setup(){
   pinMode(pinsw, INPUT_PULLUP);
   lcd.begin(16,2); //16 columns and 2 rows
   lcd.setRGB(100,100,100);
+  Ardu_mesagge();
 }
 
 void loop(){

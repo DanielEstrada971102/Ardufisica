@@ -12,10 +12,10 @@ String Listado_menu[18] = {"<Microfono     >", "<Sensor Hall   >", "<Gen. sonido
                            "<Micro Servo   >", "<Atomizador    >", "<Detector EMG  >", 
                            "<Led R_G_B     >", "<Tacometro     >", "<   Mas Info   >" };
 
-String Listado_sensors[18] = {"microf", "hall", "gen.son", "distan", "tempIR", 
-                              "color", "calidad", "fotorres", "cardiaco", "gsr",
-                              "tempK", "luz", "servo", "atomiza", "emg", "ledRGB", 
-                              "tacomet", "help"};
+String Listado_sensors[18] = {"microfono", "hall", "gen.sonido", "distancia", "temperaturaIR", 
+                              "color", "calidad", "fotorresistencia", "cardiaco", "gsr",
+                              "temperaturaK", "luz", "servo", "atomizador", "emg", "ledRGB", 
+                              "tacometro", "help"};
 void clean_buff(void){
     lcd.clear();
     Serial.read();//Limpia el buffer serial
@@ -27,6 +27,8 @@ void clean_buff(void){
         while(digitalRead(pinsw) == 0);//Hasta que no deje de presionar el encoder no sale de la función
         lcd.clear();
     }
+    Serial.println("Salio del sensor...");
+    Serial1.println("Salio del sensor...");
     delay(500);
 }
 
@@ -36,15 +38,29 @@ void lcd_mesagge(String firstLine, String secondLine){
     lcd.setCursor(0,1);
     lcd.print(secondLine);
 }
-void Ardu_mesagge(String sensor){    
+void Ardu_mesagge(){    
 
     Serial.println("Universidad de Antioquia - Instituto de Física");
-    Serial.print("Interfaz ArduFísica: ");
-    Serial.println(sensor);
+    Serial.println("Interfaz ArduFísica");
+    Serial.println("Si desea controlar el modulo de forma remota puede usar alguna de las siguientes instrucciones: ");
     //Bluetooth----------------
     Serial1.println("Universidad de Antioquia - Instituto de Física");
-    Serial1.print("Interfaz ArduFísica: ");
-    Serial1.println(sensor);
+    Serial1.println("Interfaz ArduFísica: ");
+    Serial1.println("Si desea controlar el modulo de forma remota puede usar alguna de las siguientes instrucciones: ");
+    
+    for (int i = 0; i < 18; i++){
+    	if (i == 17){
+    		Serial.println(Listado_sensors[i]);
+    		Serial1.println(Listado_sensors[i]);
+    	}
+    	else{
+    		Serial.print(Listado_sensors[i] + ", ");
+    		Serial1.print(Listado_sensors[i] + ", ");
+    	}
+    }
+
+    Serial.println("Para detener la ejecucion de cada sensor escriba 'stop'. ");
+    Serial1.println("Para detener la ejecucion de cada sensor escriba 'stop'. ");
 }
 
 void Encoder_menu(int infLim, int supLim, int *option, int step){
@@ -85,7 +101,6 @@ String serial_readPhrase(){
                 phrase.concat(c);
         }
     }
-    
     return phrase;       
 }
 

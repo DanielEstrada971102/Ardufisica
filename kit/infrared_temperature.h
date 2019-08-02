@@ -4,7 +4,7 @@
 //====================Prototipes =========================
 float binSearch(long x);
 float arraysearch(float x, float y);
-void measureSurTemp(float *final_temp, int PIN_SUR);
-void measureObjectTemp(float *final_temp, int PIN_OBJ);
+void measureSurTemp(float *final_temp, int SUR);
+void measureObjectTemp(float *final_temp1, int OBJ);
 
 #endif

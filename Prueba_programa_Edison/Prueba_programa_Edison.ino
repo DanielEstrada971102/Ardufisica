@@ -437,7 +437,7 @@ void distancia_ultrasonido(){
   int distancia;
   while(digitalRead(pin_sw)==1 and (Serial1.available()== 0)){
     t=(millis()-t_inicial)/1000.0;
-    distancia=ultrasonido.read(CM);
+    distancia=ultrasonido.Ranging(CM);
     print_pantalla("Ultrasonido: D6","    "+String(distancia)+"   cm");
     Serial.println(distancia);
     Serial1.println(distancia);

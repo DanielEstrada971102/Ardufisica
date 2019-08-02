@@ -10,7 +10,8 @@ void microfono(int SIG, int Timedelay){
   	long Intensity = 0;
   
 	lcd_mesagge(firstLine);
-  	Ardu_mesagge("Grove - Sound Sensor");
+  	Serial.println("Sensor : Grove - Sound Sensor");
+  	Serial1.println("Sensor : Grove - Sound Sensor");
 	Serial.println("Intensidad");
 	Serial1.println("Intensidad");
 	
@@ -37,7 +38,7 @@ void hall_magnetico(int AO, int Timedelay){
 		AO -> Input Voltage
 	 */
 	analogReference(DEFAULT);
-	float factor = 5000.0/(1023.0 * 1.3); //1.3mV/Gauss , 5V->1023
+	float factor = 5000.0/(1023.0 * 1.3); //1.3mV/Gauss , 5V->1023--> no se implementa pues no hay certeza.
   	firstLine = "Hall: A" + String(AO);
   	secondLine = "Calib.campo ...";
   
@@ -48,12 +49,13 @@ void hall_magnetico(int AO, int Timedelay){
  
 	int V_0 = analogRead(AO), campo;
 	unsigned long t_inicial = millis(), t; 
-	Ardu_mesagge("Hall Sensor Magnetic M44");
-  	Serial.println("tiempo(s)  Campo(G)");
-  	Serial1.println("tiempo(s)  Campo(G)");
+	Serial.println("Sensor : Hall Sensor Magnetic M44");
+	Serial1.println("Sensor : Hall Sensor Magnetic M44");
+  	Serial.println("tiempo(s)  Valor");
+  	Serial1.println("tiempo(s)  Valor");
 	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
 		t = (millis() - t_inicial);
-		campo = (analogRead(AO) - V_0) * factor; // pin A14 --default
+		campo = (analogRead(AO) - V_0); // pin A14 --default
 		Serial.print(t/1000.0); 
 		Serial.print('\t');
 		Serial.println(campo);
@@ -61,7 +63,7 @@ void hall_magnetico(int AO, int Timedelay){
 		Serial1.print("    ");
 		Serial1.println(campo);
 
-    	secondLine = String(campo) + "            G ";
+    	secondLine = "     "+ String(campo) + "           ";
 		lcd_mesagge(firstLine, secondLine);
 		delay(Timedelay); // tiempo de espera en ms --500 ms default
 	}
@@ -88,41 +90,35 @@ void generador_sonido(int SIG){
 				 " Hz "; 
 
 	lcd_mesagge(firstLine, secondLine);
-  	Ardu_mesagge("Grove - Speaker ");
+  	Serial.println("Sensor : Grove - Speaker ");
+  	Serial1.println("Sensor : Grove - Speaker ");
 	int encoder_inicio = myEnc.read();
 
-	lcd_mesagge("    Continuar   ", "            --> ");
-	Serial.println("Introduzca una de las siguientes frecuencia o escriba 'continue' para omitir");
-	Serial1.println("Introduzca una de las siguientes frecuencia o escriba 'continue' para omitir");
+	Serial.println("Introduzca una de las siguientes frecuencia o escojala manualmente con el encoder");
+	Serial1.println("Introduzca una de las siguientes frecuencia o escojala manualmente con el encoder");
 
 	for(int i = 0; i < 12; i++){
 	  	Serial.println(Lista_freq[i]);
 	  	Serial1.println(Lista_freq[i]);
 	}
   
-	while(digitalRead(pinsw) == 1 and not(continuar)){
-		freq = serial_readPhrase();
-		for (int i= 0; i < 12; i++){
-            if(freq == Lista_freq[i]){
-                tono = i;
-                continuar = true;
-                Serial.println("Usted escogio " + Lista_freq[i] + " Hz");
-                Serial1.println("Usted escogio " + Lista_freq[i] + " Hz");
-                break;
-            }
-            else{
-            	if(freq == "continue")
-                	continuar = true;
-            }
-	    }
-      delay(100);
-	} 
-
-  	delay(500);
+  	delay(100);
     secondLine = " "+String(tono+1)+"   "+String(500000/Tiempo_Tono[tono])+" Hz  ";
 	lcd_mesagge(firstLine, secondLine);
 	
-	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
+	while(digitalRead(pinsw) == 1 and freq != "stop"){
+       	if(Serial.available() or Serial1.available()){
+	       	freq = serial_readPhrase();
+		 	for (int i= 0; i < 12; i++){
+	             if(freq == Lista_freq[i]){
+	                 tono = i;
+	                 continuar = true;
+	                 Serial.println("Usted escogio " + Lista_freq[i] + " Hz");
+	                 Serial1.println("Usted escogio " + Lista_freq[i] + " Hz");
+	                 break;
+	             }
+		     }
+		 }
       	Encoder_menu(0, 11, &tono);
       
       	if(tono_temp != tono){
@@ -156,12 +152,13 @@ void distancia_ultrasonido(int TRIG, int ECHO){
 	unsigned long t_inicial = millis(), t;
 	int distancia;
 
-	Ardu_mesagge("Ultrasonic Sensor HC-SR04");
+	Serial.println("Sensor : Ultrasonic Sensor HC-SR04");
+	Serial1.println("Sensor : Ultrasonic Sensor HC-SR04");
   	Serial.println("t (s) \t ditancia (cm)");
   	Serial1.println("t (s)      ditancia (cm)");
 	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
 		t = millis() - t_inicial;
-		distancia = ultrasonido.read(CM);
+		distancia = ultrasonido.Ranging(CM);
 		Serial.print(t / 1000.0);
 		Serial.print('\t');
 		Serial.println(distancia);
@@ -181,21 +178,22 @@ void temperatura_infrarrojo(int SUR, int OBJ){
 		SUR -> Surround temperature  input
 		OBJ -> Objective temperature input
 	*/
-
 	float temperaturaOBJ, temperaturaSUR;
 	firstLine = "Infra.Temp:A" + String(SUR) + "-A" + String(OBJ);
 	lcd_mesagge(firstLine);
 
-	unsigned long t_inicial = millis(), t;
-	
-	Ardu_mesagge("Grove - Infrared Temperature Sensor");
+	Serial.println("Sensor : Grove - Infrared Temperature Sensor");
+	Serial1.println("Sensor : Grove - Infrared Temperature Sensor");
 	Serial.println("Sensor voltaje tiempo(s) TempSUR(°C)  TempOBJ(°C)");
 	Serial1.println("Sensor voltaje tiempo(s) TempSUR(°C)  TempOBJ(°C)");
+
+	unsigned long t_inicial = millis(), t;
 	
-	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
-		t = millis() - t_inicial;
-		measureSurTemp(&temperaturaSUR, SUR); // pin A0 -- default
-		measureObjectTemp(&temperaturaOBJ, OBJ); // Pin A1 -- default
+	while(digitalRead(pinsw) == 1 and serial_readPhrase()!= "stop"){
+		t = millis() - t_inicial;  
+		measureSurTemp(&temperaturaSUR, SUR);//measure the Surrounding temperature around the sensor
+		measureObjectTemp(&temperaturaOBJ ,OBJ);
+
 		Serial.print(t / 1000.0);
 		Serial.print('\t');
 		Serial.print(temperaturaSUR);
@@ -206,12 +204,12 @@ void temperatura_infrarrojo(int SUR, int OBJ){
 		Serial1.print(temperaturaSUR);
 		Serial1.print("    ");
 		Serial1.println(temperaturaOBJ);
-		
-		secondLine = String(temperaturaSUR) + " " + String(temperaturaOBJ) + 
-					 "  " + char(223) + "C";
-		lcd_mesagge(firstLine, secondLine);
 
+		secondLine = String(temperaturaSUR) + " " + String(temperaturaOBJ) + 
+		       "  " + char(223) + "C    ";
+		lcd_mesagge(firstLine, secondLine);
 	}
+
 	clean_buff();
 }
 
@@ -253,7 +251,8 @@ void color(int S0, int S1, int S2, int S3, int OE, int led, int out){
 	digitalWrite(led,HIGH); 
 	
 	
-	Ardu_mesagge("Color sensor - TCS3200");
+	Serial.println("Sensor : Color sensor - TCS3200");
+	Serial1.println("Sensor : Color sensor - TCS3200");
 	Serial.println("R\tG\tB");
 	Serial1.println("R    G    B");
 	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
@@ -317,9 +316,10 @@ void calidad_aire(int SIG, int Timedelay){
 	int V_0 = 0;
  
   	delay(1000);
-  Ardu_mesagge("Air Quality sensor");
-  Serial.println(mesagge);
-  Serial1.println(mesagge);
+  	Serial.println("Sensor : Air Quality sensor");
+  	Serial1.println("Sensor : Air Quality sensor");
+  	Serial.println(mesagge);
+  	Serial1.println(mesagge);
 	while(digitalRead(pinsw) == 1 and not(continuar)){
 		if(serial_readPhrase() == "continue")
 			continuar = true;
@@ -385,7 +385,8 @@ void photoResitor(int S, int Timedelay){
 	lcd_mesagge(firstLine, "Enviando al PC...");
 	delay(500);
 
-	Ardu_mesagge("Photoresistor module ky-018");
+	Serial.println("Sensor : Photoresistor module ky-018");
+	Serial1.println("Sensor : Photoresistor module ky-018");
 	Serial.println("Valor");
 	Serial1.println("Valor");
 
@@ -413,7 +414,8 @@ void ritmo_cardiaco(int Timedelay){
 	lcd_mesagge(firstLine, "Enviando al PC...");
     delay(500);
     lcd.clear();
-	Ardu_mesagge("finger clip heart rate sensor");
+	Serial.println("Sensor : finger clip heart rate sensor");
+	Serial1.println("Sensor : finger clip heart rate sensor");
 	Serial.println("frecuencia  (BPM)");
 	Serial1.println("frecuencia  (BPM)");
 	while(Wire.available() == 0 and digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){ 
@@ -444,9 +446,10 @@ void conductancia(int PIN){
 	lcd_mesagge(firstLine,"Enviando al PC...");
 	delay(500);
 	
-	Ardu_mesagge("Galvanic Skin Response (GSR)");
-	Serial.println("GSR (Promedio)");
-	Serial1.println("GSR (Promedio)");
+	Serial.println("Sensor : Galvanic Skin Response (GSR)");
+	Serial1.println("Sensor : Galvanic Skin Response (GSR)");
+	Serial.println("GSR Valor");
+	Serial1.println("GSR Valor");
 	while(digitalRead(pinsw)==1 and serial_readPhrase() != "stop"){
 		sum = 0;
 		for(int i = 0; i < 10; i++){
@@ -480,7 +483,8 @@ void Termocupla_k( int CS, int SCK, int SO, int Timedelay){
 	lcd_mesagge(firstLine, "Enviando al PC...");
 	delay(500);
 
-	Ardu_mesagge("Termocupla tipo K - MAX6675K");	
+	Serial.println("Sensor : Termocupla tipo K - MAX6675K");
+	Serial1.println("Sensor : Termocupla tipo K - MAX6675K");	
 	Serial.println("Temp (°C) ");
 	Serial1.println("Temp (°C) ");
 	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
@@ -539,7 +543,8 @@ void luminosidad(){
 	delay(500);
 	lcd_mesagge(firstLine, "Enviando al PC...");
 	delay(500);
-	Ardu_mesagge("Light Intensity Sensor - GY302");
+	Serial.println("Sensor : Light Intensity Sensor - GY302");
+	Serial1.println("Sensor : Light Intensity Sensor - GY302");
 	Serial.println("Luminosidad (lx)");
 	Serial1.println("Luminosidad (lx)");
 
@@ -565,17 +570,27 @@ void Servomotor(int PIN){
 	encoder_inicio = myEnc.read();
 	int ang = 0;
   	int ang_temp = ang;
+  	String angulo= "";
 	
 	firstLine = "Servo:  D" + String(PIN);
 	secondLine = "   Angulo  0  ";
 
 	servoMotor.write(180);
 	lcd_mesagge(firstLine, secondLine);
-  	Ardu_mesagge("Mico Servo SG90");
+  	Serial.println("Sensor : Mico Servo SG90");
+  	Serial1.println("Sensor : Mico Servo SG90");
+    Serial.println("Ingrese un angulo entre 0 y 180 o escojalo manualmente con el encoder. ");
+    Serial1.println("Ingrese un angulo entre 0 y 180 o escojalo manualmente con el encoder. ");
   	Serial.println("Angulo");
   	Serial1.println("Angulo");
   
-	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){ 
+	while(digitalRead(pinsw) == 1 and angulo != "stop"){ 
+		if (Serial.available() or Serial1.available()){
+			angulo = serial_readPhrase();
+			if(angulo.toInt() < 180 and angulo.toInt() > 0)
+				ang = angulo.toInt(); 
+		}
+		
 		Encoder_menu(0, 180, &ang,2);
 		if( ang != ang_temp){
 		    servoMotor.write(180-ang);
@@ -585,7 +600,7 @@ void Servomotor(int PIN){
         Serial1.println(ang);
 		    ang_temp = ang;
 		}
-    delay(10);
+    	delay(10);
 	}
     servoMotor.write(180);
     clean_buff();
@@ -600,9 +615,22 @@ void atomizador(int PIN){
 	String state = "";
 	digitalWrite(PIN,LOW);
 	lcd_mesagge(firstLine, "Atomizacion Off");
-	Ardu_mesagge("Grove - Water Atomization");
+	Serial.println("Sensor : Grove - Water Atomization");
+	Serial1.println("Sensor : Grove - Water Atomization");
+  Serial.println("Puede establecer el estado del sensor como 'on' o 'off'. ");
+  Serial1.println("Puede establecer el estado del sensor como 'on' o 'off'. ");
 
-	while(digitalRead(pinsw)== 1 and serial_readPhrase() != "stop"){ 
+	while(digitalRead(pinsw)== 1 and state  != "stop"){
+		if (Serial.available() or Serial1.available()){
+			state = serial_readPhrase();
+			if (state == "on"){
+				option = 1;
+			}
+			else if (state == "off"){
+				option = 0;
+			}
+		}
+   
 		Encoder_menu(0, 1, &option);
 		
 		if (option_temp != option){
@@ -618,10 +646,10 @@ void atomizador(int PIN){
 				Serial.println("Atomizacion off  ");
 				Serial1.println("Atomizacion off  ");
 			}
-      option_temp = option;
+      		option_temp = option;
 		}
-			
- 	}
+		delay(10);
+	}
  	clean_buff();
 }
 
@@ -631,9 +659,10 @@ void EMG_detector(int VOUT, int Timedelay){
 	long suma = 0;
 
 	firstLine = "EMG: A" + String(VOUT);
-  Ardu_mesagge("Grov - EMG detector");
-  Serial.println("Calibrando ...");
-  Serial1.println("Calibrando ...");
+  	Serial.println("Sensor : Grov - EMG detector");
+  	Serial1.println("Sensor : Grov - EMG detector");
+  	Serial.println("Calibrando ...");
+  	Serial1.println("Calibrando ...");
   
 	for(int i = 0; i <= 10; i++){
 		for(int j = 0; j < 100; j++){
@@ -654,7 +683,7 @@ void EMG_detector(int VOUT, int Timedelay){
 	Serial1.println("V_out");
 	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
 		valor = getAnalog(VOUT);
-		secondLine = "VOUT -> " + String(valor) + "       ";
+		secondLine = "     " + String(valor) + "         ";
 
 		lcd_mesagge(firstLine, secondLine);
 		Serial.println(valor);
@@ -674,7 +703,7 @@ void Led_RGB(int R, int G, int B){
 
 	int encoder_inicio = myEnc.read();
 	int color = 1, Pin = R, Valor = 0;
-  String RGB[3] = {"0", "0", "0"};
+  	String RGB[3] = {"0", "0", "0"};
 	String palabra = "", intensity = "";
 	bool Salir =false, Salir_color =false;
 	String opciones[5] = {"Volver al Menu   ", "Intensidad Rojo   ", 
@@ -687,7 +716,8 @@ void Led_RGB(int R, int G, int B){
 	firstLine = "RGB: D" + String(R) +"-D"+ String(G) + "-D" + String(B);
 	
 	lcd_mesagge(firstLine, opciones[color]);
-	Ardu_mesagge("Led RGB");
+	Serial.println("Sensor : Led RGB");
+	Serial1.println("Sensor : Led RGB");
 	Serial.println("Introduzca la intensidad de cada color seguido de la palabra 'apply'. ");
 	Serial.println("Ejem:  enviar primero 'R53', Luego 'apply'. Esto establecera la intensidad del rojo en 53. ");
 	Serial1.println("Introduzca la intensidad de cada color seguido de la palabra 'apply'. ");
@@ -751,7 +781,10 @@ void Led_RGB(int R, int G, int B){
 			while(digitalRead(pinsw) == 0);
 			encoder_inicio = myEnc.read();
 			
-			while(digitalRead(pinsw) == 1 and serial_readPhrase() != "apply"){
+			while(digitalRead(pinsw) == 1 and palabra != "apply" and palabra != "stop"){
+        		if (Serial.available() or Serial1.available())
+        			palabra = serial_readPhrase();
+        		
 				Encoder_menu(0, 255, &Valor);
 				lcd_mesagge(firstLine,"Intensidad: "+String(Valor) + "      ");
 			}
@@ -786,57 +819,23 @@ void Tacometro(int OUT){
 	
 	firstLine = "Tacometro: A" + String(OUT); // Pin D4 --default
 
-	Ardu_mesagge("Tachometer");
+	Serial.println("Sensor : Tachometer");
+	Serial1.println("Sensor : Tachometer");
 	lcd_mesagge(firstLine,"Envia al PC");
 	delay(500);
 	Serial.println("Tiemp.Oscuridad (ms)");
 	Serial1.println("Tiemp.Oscuridad (ms)");
 
-	// while(Salir == 0 and Serial.available() == 0){
-	// 	valor = ( analogRead(OUT) * 5) / 1023;
-
-	// 	while(valor > 2 and Salir == 0 and Serial.available() == 0){
-	// 	  	if (digitalRead(pinsw) == 0)
-	// 	  		Salir =1;
-	// 	  	valor = (analogRead(OUT) * 5) / 1023;
-	// 	}
-	// 	lcd_mesagge(firstLine,"Esperando     ");
-
-	// 	while(valor < 3 and Salir == 0 and Serial.available() == 0){
-	// 	  	if (digitalRead(pinsw) == 0)
-	// 	    	Salir =1;
-	// 	  	valor= (analogRead(OUT) * 5) / 1023;
-	// 	}
-
-	// 	t1 = millis();
-	// 	lcd_mesagge(firstLine, "Tomando tiempo");
-		
-	// 	while(valor > 2 and Salir==0 and Serial.available() == 0){
-	// 	  	if (digitalRead(pinsw) == 0)
-	// 	    	Salir = 1;
-	// 	  	valor= (analogRead(OUT) * 5) / 1023;
-	// 	}
-
-	// 	t2 = millis();
-	// 	T_Osc = t2 - t1;
-		
-	// 	if (Salir == 0){
-	// 		secondLine = "T.Osc.->"+ String(T_Osc) + "  ms";
-	// 	  	lcd_mesagge(firstLine, secondLine);
-	// 	  	Serial.println(T_Osc);
-	// 	  	Serial1.println(T_Osc);	
-	// 	}
-	// }
-	while(Salir == 0 and (Serial1.available()== 0)){
+	while(Salir == 0 and (Serial1.available() == 0 and Serial.available() == 0)){
 	    valor= ((analogRead(4))*5)/1023;
-	    while(valor > 2 and Salir==0){
+	    while(valor > 2 and Salir == 0){
 		    if (digitalRead(pinsw) == 0){
 		        Salir =1;
 		    }
 		    valor= ((analogRead(4))*5)/1023;
 	    }
 	    lcd_mesagge("T.Oscuri.: A4-A5","Esperando");
-	    while(valor < 3 and Salir==0 and (Serial1.available()== 0)){
+	    while(valor < 3 and Salir==0 and (Serial1.available() == 0 and Serial.available() == 0)){
 			if (digitalRead(pinsw) == 0){
 				Salir =1;
 			}
@@ -844,21 +843,22 @@ void Tacometro(int OUT){
 		}
 	    tiempo1=millis();
 	    lcd_mesagge("T.Oscuri.: A4-A5","Tomando tiempo");
-	    while(valor > 2 and Salir==0 and (Serial1.available()== 0)){
+	    while(valor > 2 and Salir==0 and (Serial1.available() == 0 and Serial.available() == 0)){
 			if (digitalRead(pinsw) == 0){
 				Salir =1;
 			}
 			valor= ((analogRead(4))*5)/1023;
-		};
+		}
 	    
 	    tiempo2=millis();
 	    T_Osc =tiempo2-tiempo1;
-	    if (Salir == 0 and (Serial1.available()== 0)){
+	    if (Salir == 0 and (Serial1.available() == 0 and Serial.available() == 0)){
 			lcd_mesagge("T.Oscuri.: A4-A5","T.Osc.->"+String(T_Osc)+" ms");
 			Serial.println(T_Osc);
 			Serial1.println(T_Osc);
 		}
     }
+    posicion_menu = 17;
 	analogReference(INTERNAL1V1);
 	clean_buff();
 }
