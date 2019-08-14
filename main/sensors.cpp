@@ -19,15 +19,15 @@ void microfono(int SIG, int Timedelay){
 		for(int i = 0; i < 1000; i++)
 		  Intensity += analogRead(SIG);
 
-    Intensity >>=5;
+    	Intensity >>=5;
 		Serial.println(Intensity);	// pin A12 --default
 		Serial1.println(Intensity);
-    secondLine = String(Intensity) + "    dt=" + String(Timedelay)+ " ms";
-    lcd_mesagge(firstLine, secondLine);
-    
-    Intensity = 0;
-     
-    delay(Timedelay); // tiempo de espera en ms -- 100 ms default
+	    secondLine = String(Intensity) + "    dt=" + String(Timedelay)+ " ms     ";
+	    lcd_mesagge(firstLine, secondLine);
+	    
+	    Intensity = 0;
+	     
+	    delay(Timedelay); // tiempo de espera en ms -- 100 ms default
 	}
 	analogReference(INTERNAL1V1);
 	clean_buff();
@@ -63,7 +63,7 @@ void hall_magnetico(int AO, int Timedelay){
 		Serial1.print("    ");
 		Serial1.println(campo);
 
-    	secondLine = "     "+ String(campo) + "           ";
+    	secondLine = "     "+ String(campo) + "             ";
 		lcd_mesagge(firstLine, secondLine);
 		delay(Timedelay); // tiempo de espera en ms --500 ms default
 	}
@@ -103,7 +103,7 @@ void generador_sonido(int SIG){
 	}
   
   	delay(100);
-    secondLine = " "+String(tono+1)+"   "+String(500000/Tiempo_Tono[tono])+" Hz  ";
+    secondLine = " "+String(tono+1)+"   "+String(500000/Tiempo_Tono[tono])+" Hz     ";
 	lcd_mesagge(firstLine, secondLine);
 	
 	while(digitalRead(pinsw) == 1 and freq != "stop"){
@@ -123,7 +123,7 @@ void generador_sonido(int SIG){
       
       	if(tono_temp != tono){
           	tono_temp = tono;
-          	secondLine = " "+String(tono+1)+"   "+String(500000/Tiempo_Tono[tono])+" Hz  ";
+          	secondLine = " "+String(tono+1)+"   "+String(500000/Tiempo_Tono[tono])+" Hz      ";
     		lcd_mesagge(firstLine, secondLine);
      	}
       
@@ -166,7 +166,7 @@ void distancia_ultrasonido(int TRIG, int ECHO){
 		Serial1.print("    ");
 		Serial1.println(distancia);
 
-    	secondLine = String(distancia) + "          cm   ";
+    	secondLine = String(distancia) + "          cm       ";
 		lcd_mesagge(firstLine, secondLine);
 		delay(500);
 	}
@@ -206,7 +206,7 @@ void temperatura_infrarrojo(int SUR, int OBJ){
 		Serial1.println(temperaturaOBJ);
 
 		secondLine = String(temperaturaSUR) + " " + String(temperaturaOBJ) + 
-		       "  " + char(223) + "C    ";
+		       "  " + char(223) + "C            ";
 		lcd_mesagge(firstLine, secondLine);
 	}
 
@@ -245,7 +245,7 @@ void color(int S0, int S1, int S2, int S3, int OE, int led, int out){
 	pinMode(S3,OUTPUT); //pin 45 --default
 	pinMode(OE,OUTPUT); //pin D4 --default
 	pinMode(led,OUTPUT); //pin D5 --default
-	digitalWrite(S1,HIGH); 
+	digitalWrite(S1,LOW); 
 	digitalWrite(S0,HIGH);//Frequency scaling 100% 
 	digitalWrite(OE,LOW); 
 	digitalWrite(led,HIGH); 
@@ -276,7 +276,7 @@ void color(int S0, int S1, int S2, int S3, int OE, int led, int out){
 				 B =abs(100000.0/pulseIn(out,HIGH));
 			} 
 		}
-		delay(200);
+		delay(600);
 		maximum = max(R, G);
 		maximum = max(maximum, B);
 		R = R * 255.0 / maximum; //Renormaliza (R,G,B)
@@ -396,7 +396,7 @@ void photoResitor(int S, int Timedelay){
 		Serial.println(value);
 		Serial1.println(value);
 		
-		secondLine = String(value) + "      dt =" + String(Timedelay)+ "   "; 
+		secondLine = String(value) + "      dt =" + String(Timedelay)+ "       "; 
 
 		lcd_mesagge(firstLine, secondLine);
 		delay(Timedelay);
@@ -458,7 +458,7 @@ void conductancia(int PIN){
 			delay(5);
 		}
 		gsr_average = sum / 10;
-		secondLine = " GSR -> " +  String(gsr_average) + "          ";
+		secondLine = " GSR -> " +  String(gsr_average) + "            ";
 		
 		lcd_mesagge(firstLine, secondLine);
 		Serial.println(gsr_average);
@@ -489,7 +489,7 @@ void Termocupla_k( int CS, int SCK, int SO, int Timedelay){
 	Serial1.println("Temp (°C) ");
 	while(digitalRead(pinsw) == 1 and serial_readPhrase() != "stop"){
 		temp = thermocouple.readCelsius(); 
-		secondLine = " " + String(temp) + "    " + char(223) + "C         ";
+		secondLine = " " + String(temp) + "    " + char(223) + "C           ";
 	    
 	    lcd_mesagge(firstLine,secondLine);
 	    Serial.println(temp);
@@ -553,7 +553,7 @@ void luminosidad(){
 		Serial.println(lux);
 		Serial1.println(lux);
 
-		secondLine = " " + String(lux) + "       lx    ";
+		secondLine = " " + String(lux) + "       lx        ";
 		lcd_mesagge(firstLine, secondLine);
 		delay(500);
 	}
@@ -594,7 +594,7 @@ void Servomotor(int PIN){
 		Encoder_menu(0, 180, &ang,2);
 		if( ang != ang_temp){
 		    servoMotor.write(180-ang);
-		    secondLine = "   Angulo  " + String(ang) + "     "; 
+		    secondLine = "   Angulo  " + String(ang) + "         "; 
         lcd_mesagge(firstLine, secondLine);
 		    Serial.println(ang);
         Serial1.println(ang);
@@ -636,13 +636,13 @@ void atomizador(int PIN){
 		if (option_temp != option){
 			if (option == 1){
 				digitalWrite(PIN, HIGH);
-				lcd_mesagge(firstLine, "Atomizacion on  ");
+				lcd_mesagge(firstLine, "Atomizacion on      ");
 				Serial.println("Atomizacion on  ");
 				Serial1.println("Atomizacion on  ");
 			}
 			else{
 				digitalWrite(PIN, LOW);
-				lcd_mesagge(firstLine, "Atomizacion off  ");
+				lcd_mesagge(firstLine, "Atomizacion off     ");
 				Serial.println("Atomizacion off  ");
 				Serial1.println("Atomizacion off  ");
 			}
@@ -706,8 +706,8 @@ void Led_RGB(int R, int G, int B){
   	String RGB[3] = {"0", "0", "0"};
 	String palabra = "", intensity = "";
 	bool Salir =false, Salir_color =false;
-	String opciones[5] = {"Volver al Menu   ", "Intensidad Rojo   ", 
-						  "Intensidad Verde   ", "Intensidad Azul   "};
+	String opciones[5] = {"Volver al Menu     ", "Intensidad Rojo     ", 
+						  "Intensidad Verde     ", "Intensidad Azul     "};
 
 	analogWrite(R,LOW);//Red Pin D2 -- default
 	analogWrite(G,LOW);//Green Pin D3 -- default
@@ -786,7 +786,7 @@ void Led_RGB(int R, int G, int B){
         			palabra = serial_readPhrase();
         		
 				Encoder_menu(0, 255, &Valor);
-				lcd_mesagge(firstLine,"Intensidad: "+String(Valor) + "      ");
+				lcd_mesagge(firstLine,"Intensidad: "+String(Valor) + "         ");
 			}
 
 			analogWrite(Pin, Valor);
@@ -834,7 +834,7 @@ void Tacometro(int OUT){
 		    }
 		    valor= ((analogRead(4))*5)/1023;
 	    }
-	    lcd_mesagge("T.Oscuri.: A4-A5","Esperando");
+	    lcd_mesagge("T.Oscuri.: A4-A5","Esperando      ");
 	    while(valor < 3 and Salir==0 and (Serial1.available() == 0 and Serial.available() == 0)){
 			if (digitalRead(pinsw) == 0){
 				Salir =1;
@@ -842,7 +842,7 @@ void Tacometro(int OUT){
 			valor= ((analogRead(4))*5)/1023;
 		}
 	    tiempo1=millis();
-	    lcd_mesagge("T.Oscuri.: A4-A5","Tomando tiempo");
+	    lcd_mesagge("T.Oscuri.: A4-A5","Tomando tiempo      ");
 	    while(valor > 2 and Salir==0 and (Serial1.available() == 0 and Serial.available() == 0)){
 			if (digitalRead(pinsw) == 0){
 				Salir =1;
@@ -853,7 +853,7 @@ void Tacometro(int OUT){
 	    tiempo2=millis();
 	    T_Osc =tiempo2-tiempo1;
 	    if (Salir == 0 and (Serial1.available() == 0 and Serial.available() == 0)){
-			lcd_mesagge("T.Oscuri.: A4-A5","T.Osc.->"+String(T_Osc)+" ms");
+			lcd_mesagge("T.Oscuri.: A4-A5","T.Osc.->"+String(T_Osc)+" ms        ");
 			Serial.println(T_Osc);
 			Serial1.println(T_Osc);
 		}

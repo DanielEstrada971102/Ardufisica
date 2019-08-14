@@ -174,7 +174,9 @@ void run_sensor(int posicion_menu){
 void info(){
     int i = 0;
     firstLine = "Para mas informacion de los sensores, de la programacion y de como funciona el modulo Ardufisica, visite el siguiete repositorio:   https://github.com/DanielEstrada971102/Ardufisica    ";
-    delay(1000);
+    Serial.print(firstLine + "\n");
+    Serial1.print(firstLine + "\n");
+
     while(digitalRead(pinsw) == 1){
         if (i + 16 < firstLine.length())
             lcd_mesagge(firstLine.substring(i, i + 16));

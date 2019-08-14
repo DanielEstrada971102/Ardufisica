@@ -3,7 +3,7 @@
 
 //====================Prototipes =========================
 void microfono(int SIG = 12, int Timedelay = 10);
-void hall_magnetico(int AO = 14, int Timedelay = 500);
+void hall_magnetico(int AO = 14, int Timedelay = 100);
 void generador_sonido(int SIG = 4);
 void distancia_ultrasonido(int TRIG = 6, int ECHO = 7);
 void temperatura_infrarrojo(int SUR = 0, int OBJ = 1);
