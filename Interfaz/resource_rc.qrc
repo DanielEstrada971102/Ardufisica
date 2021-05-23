@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="prefijoNuevo">
+    <file>.images/lcd.png</file>
+    <file>.images/udea.png</file>
+  </qresource>
+</RCC>
